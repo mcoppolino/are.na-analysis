@@ -65,11 +65,20 @@ i. follower_count - (int) number of users following user
 
 
 
-IV. Format of "connections" table
+IV. Format of "block_conn" table
 
-The table has the following attributes: "users_connected_to" and "channels_connected_to". Each line of 'connections.csv' represents one connection between the user and the channel. Below is an example:
-users_connected_to=  channels_connected_to=
+The table has the following attribute: 'block_connections'. 'Block_connections' returns from channels/id/channels and contains channels that share blocks with a certain channel. Each line of 'block_connections.csv' is a list of ids of channels, where the first id is the target channel and the remainder of ids in the same row are the connections. Below is an example:
+594054,594076,594072,594077,337645,594075
+where 594054 is the target channel id and the rest are ids of channels connected to the target channel.
 
-a. users_connected_to - foreign key that references 'id' of "user", (varchar) 
+a. block_connections - (list of ints) the first id is the target channel and the remainder of ids in the same row are the connections
 
-b. channels_connected_to - foreign key that references 'id' of "channel", (varchar) 
+
+
+V. Format of "channel_conn" table
+
+The table has the following attribute: 'channel_connections'. 'Channel_connections' returns from channels/id/connections. Each line of 'channel_connections.csv' is a list of ids of channels, where the first id is the target channel and the remainder of ids in the same row are ids of channels that contain the target channel. Below is an example:
+594045,278943,487603
+where 594045 is the target channel id and the rest are ids of channels that contain the target channel.
+
+a. block_connections - (list of ints) the first id is the target channel id and the rest are ids of channels that contain the target channel
