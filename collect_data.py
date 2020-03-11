@@ -4,7 +4,6 @@ import os
 import requests
 import sqlite3
 import sys
-from string import ascii_lowercase
 
 # the attributes to be collected from API call GET /v2/channels
 # https://dev.are.na/documentation/channels#Block43473
@@ -21,11 +20,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='are.na data collection')
     parser.add_argument('-channel_csv', help='path to channel csv file to be written to', default='csv/channels.csv')
     parser.add_argument('-user_csv', help='path to user csv file to be written to', default='csv/users.csv')
-    parser.add_argument('-following_csv', help='path to user following csv file to be written to', default='csv/users.csv')
-    parser.add_argument('-followers_csv', help='path to user followers csv file to be written to', default='csv/users.csv')
-    parser.add_argument('-db', help='path to db file to be written to', default='data.db')
+    parser.add_argument('-connection_csv', help='path to connections csv file to be written to', default='csv/connections.csv')
+
     parser.add_argument('-channel_table', help='channel table name in database', default='channels')
     parser.add_argument('-user_table', help='user table name in database', default='users')
+    parser.add_argument('-connections_table', help='connections table name in database', default='connections')
+
+    parser.add_argument('-db', help='path to db file to be written to', default='data.db')
     parser.add_argument('-batch_size', help='batch_size for requests (as large as possible for speed)', default=10000)
 
     return parser.parse_args()
@@ -58,7 +59,7 @@ def user_request_iterator(batch_size):
 
     print('Requesting user data from are.na API')
 
-    for letter in 'abcdefghijklmnopqrstuvwxyz':
+    for letter in 'abcdefghijklmnopqrstuvwxyz0123456789':
         page = 1
         print('Fetching users with query "%s"' % letter)
         while True:
@@ -125,7 +126,7 @@ def write_channel_csv_to_db(csv_fp, db_fp, table_name):
                                 'kind varchar,'              + \
                                 'status varchar,'            + \
                                 'user_id varchar,'           + \
-                                'follower_count varchar,'    + \
+                                'follower_count int,'    + \
                                 'contents varchar,'          + \
                                 'collaborators varchar'      + \
                             ');'
@@ -179,39 +180,42 @@ def write_user_csv_to_db(csv_fp, db_fp, table_name):
     conn.commit()
     print('Done\n')
 
-# def user_following_iterator(user_csv_fp, following_csv):
-#     with open(user_csv_fp, mode='r') as f:
-#         reader = csv.reader(f)
-#         user_ids = [tuple(line)[0] for line in reader]
-#
-#     for id in user_ids:
-#         url = 'http://api.are.na/v2/users/%i/following' % id
-#         r = requests.get(url)
-# 
-#     return None
+def channels_connections_iterator(channels_csv_fp):
+    with open(channels_csv_fp, mode='r') as f:
+        reader = csv.reader(f)
+        channel_ids = [tuple(line)[0] for line in reader]
+
+    for id in channel_ids[1:]:
+        url = 'http://api.are.na/v2/channels/%i/channels' % id
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            continue
+
+        data = r.json()
+
+        if data['length'] == 0:
+            continue
 
 def main():
-    # for safety; delete this line to overwrite csv/db data, takes about 10 mins to complete
-    return
-
     args = parse_args()
 
     channel_csv_fp = args.channel_csv
     user_csv_fp = args.user_csv
-    following_csv_fp = args.following_csv
-    followers_csv_fp = args.followers_csv
     db_fp = args.db
     channel_table_name = args.channel_table
     user_table_name = args.user_table
     batch_size = args.batch_size
 
-    channel_iterator = channel_request_iterator(batch_size)
-    write_csv_data(channel_csv_fp, channel_iterator, CHANNEL_TARGET_ATTRS)
-    write_channel_csv_to_db(channel_csv_fp, db_fp, channel_table_name)
+    # channel_iterator = channel_request_iterator(batch_size)
+    # write_csv_data(channel_csv_fp, channel_iterator, CHANNEL_TARGET_ATTRS)
+    # write_channel_csv_to_db(channel_csv_fp, db_fp, channel_table_name)
+    #
+    # user_iterator = user_request_iterator(batch_size)
+    # write_csv_data(user_csv_fp, user_iterator, USER_TARGET_ATTRS)
+    # write_user_csv_to_db(user_csv_fp, db_fp, user_table_name)
 
-    user_iterator = user_request_iterator(batch_size)
-    write_csv_data(user_csv_fp, user_iterator, USER_TARGET_ATTRS)
-    write_user_csv_to_db(user_csv_fp, db_fp, user_table_name)
+    connections_iterator = channels_connections_iterator(channels_csv_fp, )
 
 if __name__ == '__main__':
     main()
