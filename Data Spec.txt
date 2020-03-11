@@ -1,0 +1,75 @@
+I. Full data format
+
+The data is written in a CSV file. The data contains three tables: "channel", "user", and "connections". 
+
+
+II. Format of "channel" table
+
+The table has the following attributes: 'id', 'title', 'created_at', 'updated_at', 'published', 'open', 'collaboration', 'slug', 'length', 'kind', 'status', 'user_id', 'follower_count', 'contents', 'collaborators'. Each line of 'channels.csv' represents one channel represented by its values for the aforementioned attributes. Below is an example:
+id=594069  title=preservation  created_at=2020-02-17T22:34:05.615Z  updated_at 2020-02-17T22:34:05.615Z  published=True  open=False collaboration=False slug=preservation-sfvkwduxxaa  length=0  kind=default  status=closed  user_id=104957  follower_count=0 contents=NULL  collaborators=NULL
+
+a. id - primary key, cannot be null, (int) internal ID of channel
+
+b. title - (varchar) title of channel
+
+c. created_at - (datetime) timestamp when channel was created
+
+d. updated_at - (datetime) timestamp when channel was last updated
+
+e. published - (boolean) whether channel is visible to all members of arena
+
+f. open - (boolean) whether channel is open to other members of arena for adding blocks
+
+g. collaboration - (boolean) whether channel has collaborators or not
+
+h. slug - (varchar) slug of the channel used in the url (e.g. http://are.na/arena-influences)
+
+i. length - (int) number of items in channel (blocks and other channels)
+
+j. kind - (varchar) "default" (a standard channel) or "profile" the default channel of a user
+
+k. status - (varchar) "private" (only open for reading and adding to the channel by channel author and collaborators), "closed" (open for reading by everyone, only channel author and collaborators can add) or "public" (everyone can read and add to the channel)
+
+l. user_id - foreign key that references 'id' of "user", (varchar) internal ID of the channel author
+
+m. follower_count - (int) number of followers of channel
+
+n. contents - (varchar) array of blocks and other channels in channel. If the request is authenticated, this will include any private channels included in the requested channel that you have access to. If not, only public channels included in the requested channel will be shown.
+
+o. collaborators - (varchar) collaborators on channel
+
+
+
+III. Format of "user" table
+
+The table has the following attributes: 'id', 'slug', 'username', 'first_name', 'last_name', 'channel_count', 'following_count', 'profile_id', 'follower_count'. Each line of 'users.csv' represents one user represented by its values for the aforementioned attributes. Below is an example:
+id=157219  slug=aimee-dominguez  username=Aimee Dominguez  first_name=Aimee  last_name=Dominguez  channel_count=2  following_count=4  profile_id=613670  follower_count=0
+
+a. id - primary key, cannot be null, (int) internal ID of user
+
+b. slug - (varchar) slug of user used for user's default profile channel
+
+c. username - (varchar) username of user, currently equivalent to "full_name"
+
+d. first_name - (varchar) first name of user
+
+e. last_name - (varchar) last name of user
+
+f. channel_count - (int) number of channels user owns or is a collaborator on
+
+g. following_count - (int) number of channels and users user is following
+
+h. profile_id - foreign key that references 'id' of "channel", (int) internal ID of user's profile channel
+
+i. follower_count - (int) number of users following user
+
+
+
+IV. Format of "connections" table
+
+The table has the following attributes: "users_connected_to" and "channels_connected_to". Each line of 'connections.csv' represents one connection between the user and the channel. Below is an example:
+users_connected_to=  channels_connected_to=
+
+a. users_connected_to - foreign key that references 'id' of "user", (varchar) 
+
+b. channels_connected_to - foreign key that references 'id' of "channel", (varchar) 
