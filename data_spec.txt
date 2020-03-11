@@ -1,6 +1,6 @@
 I. Full data format
 
-The data is written in a CSV file. The data contains three tables: "channel", "user", and "connections". 
+The data is written in a CSV file. The data contains three tables: "channel", "user", and "connections".
 
 
 II. Format of "channel" table

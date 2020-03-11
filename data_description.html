@@ -12,22 +12,62 @@
     <div class="col-md-2"></div>
     <div class="col-md-8">
         <div class="page-header center">
-            <h1>scra.per <<< DELIVERABLE >>></h1>
+            <h1>scra.per data</h1>
         </div>
-        <h3>Data source</h3>
+        <h3>Source and methods</h3>
         <p>
-            We collected our data directly from Are.na’s API. The three tables consist of all retrievable data related to a website’s “channels”, “users”, and “channel connections”, the last of which associates every channel with a list of channels that share at least one “block” of content in common. While all channel related data is accessible from the API and is public, some fields for our user data are irretrievable without API request permission or scraping. Specifically, we would like to access the IDs of users who follow a channel, so as to better understand the relatedness of channels (i.e. we would like the equivalent of “channel connections” for users who follow channels in common). We have reached out to the Are.na team in hopes of receiving this data in an anonymized form, although we can resort to scraping if need be and anonymize the data ourselves using user ID as a key. Our data sample is a random sample, which should represent the variety of channel lengths and user behaviors found on Are.na.
+            We collected our data directly from Are.na’s API. The four csv files in our repo (channels, users, block_connections, channel_connections) each contain information retrieved from a separate API call. The database data.db contains 2 tables (channels, users) for ease of viewing and querying of data. The state of the connections files do not currently require entry into a database.
+            <br><br>
+            While all channel related data is accessible from the API and is public, some fields for our user data cannot be retrieved without API authentication, which we do not have. Specifically, we would like to access the channels and users that a user is following, which when fed into a dense neural network, will add more information for the relationship between channels. We have reached out to the are.na team in hopes of receiving this data.
+            <br><br>
+            Without response from the are.na dev team, we will resort to analyzing channel data by itself, leveraging channel connections to associate content absent of user data. This avenue will involve a deeper analysis of content embeddings, keywords, original sources, and file types, which, if we had access to user information, would influence the model less. Generally, our next step will consist of constructing webs of connectivity based on shared users and contents which we will analyze in terms of content categories before we begin ML training and implementing our recommender system. If we don’t recieve any feedback and solely training on channel data fails, we can scrape users/channels following for each user manually using the html provided by channel slugs (although this will take a long time with over 100k users and 300k channels).
+            <br><br>
+            Our data sample is exhaustive; we hold the data for all users and all public channels.
         </p>
 
         <h3>State of data</h3>
-        <p>
-            While Are.na’s API is very straightforward, we are limited in our collection of a user’s “followers” and “followings” for privacy reasons. As mentioned, we are hoping to work around this roadblock, as the specific behavior of users will help us understand how content is related. However, if this is not possible, we will resort to analyzing channel data by itself, leveraging our “channel connections” data to associate content without user data entirely. This avenue will likely necessitate a deeper analysis of content embeddings, keywords, original sources, and file types, which we otherwise could largely ignore with high-level user behavior analysis. Generally, our next step will consist of constructing webs of connectivity based on shared users and contents which we will analyze in terms of content categories before we begin ML training and implementing our recommender system.
-        </p>
+            <h4>Data points</h4>
+                <p>
+                    We have four csv files and four tables in our database. File users.csv has 125584 rows and 9 attributes, yielding 1130256 data points for users. File channels.csv has 309539 rows and 15 attributes, yielding 4643085 data points. In total we have 577341 data points, representing all user and public channel data on the site. Files block_connections and channel_connections have an undetermined number of rows.
+                    <br><br>
+                    The length of block_connections and channel_connections is undetermined because we have not yet finished requesting all data from the API. Unlike channels and users, where each request contains 10,000 items, each connection request only contains one channel. With 2 requests per channel of length greater than 1, this yields roughly 300k API requests required, which we did not have time to execute. We’ve collected 25 rows in both block_connections and channel_connections as a sample, and the remainder of connections are in the process of being collected.
 
-        Some text
-        <ul>
-        <li> A bullet point </li>
-        </ul>
+                </p>
+            <h4>Missing values</h4>
+                <p>
+                    There are missing (NULL) values for the ‘contents’ and ‘collaborators’ attributes for the channel data. NULL values occur when API authentication is required, which we do not have. For certain channels the ‘contents’ attribute seems to contain user data, so these channels end up having NULL data for their ‘contents’ attributes.
+
+                </p>
+            <h4>Duplicates</h4>
+                <p>
+                    There appear to be no duplicates in the data.
+
+                </p>
+
+            <h4>Distribution</h4>
+                <p>
+                    For the channels data, quantities that we track are length of the channels and follower count. The data for both of these attributes is skewed to the right, as there are many channels that have small lengths and many channels that have low follower counts relative to the few channels that have much higher lengths and few channels that have much higher follower counts. For example, 128,071 out of 309,539 channels have a length of 0, only 50% of channels have a length of 2 or more, and only 228 channels have a length of 1,000 or more. Nearly 80% of channels have no followers, and only 20 channels have over 500 followers. The maximum channel length is 13,072, and the minimum channel length is 0. The maximum follower count of a channel is 1,070 and the minimum follower count is 0.
+                    <br><br>
+                    For user data, we track number of followers, number of followings, and channel count. They are skewed right in similar fashion to the quantities for channels data. Maximum followers count is 1902, maximum following count is 7558, and maximum channel count is 1821. The minimum for all these attributes is 0.
+                    <br><br>
+                    Block connections and channel connections track the connections between channels. Each row consists of ids; the first id is the target channel id and the remaining ids represent channels which the target channel is connected to. For block connections, the target channel shares one or more blocks with each connected channel; with channel connections, the target channel is contained within each connected channel.
+
+                </p>
+            <h4>Data type issues</h4>
+                <p>
+                    There are a couple of small issues with data types. One issue is that for the channels table, follower_counts are stored as strings and not ints, as a result of the type returned by the API. We can get around this through casting in SQL when we need to do analysis with this attribute, and this will be adjusted moving forward. Additionally, there appears to be one channel that has a length of “_30”, which is strange. When we searched it up on the Are.na website, it appeared to have no blocks or channels in it, which we think would give it a length of 0. Currently, we are not sure why this is the case, but it only occurs for one data point with a length of 0, so this data point will not be considered in our calculations (more on this later). Anomalies such as this are likely due to the small, ‘hacky’ scale of the website; there are only 4 developers and there is no ad revenue, thus it is not strictly maintained.
+
+                </p>
+            <h4>Data to throw away</h4>
+                <p>
+                    There appear to be a lot of channels that contain less than two pieces of content (around 50% of our channel data). We can throw away these channels, since they would be useless for our recommendation system, as recommending an empty channel is pointless and recommending one channel is the equivalent of recommending one block. These channels do not group any channels or blocks together, which we need to provide information for our recommendation system.
+                </p>
+        <h3>Challenges and next steps</h3>
+            <p>
+                A major block with collecting the data was the API’s authentication requirement for user data. In order to access information from the site which contains user information (users/channels following, and user followers), authentication is required, and this prevented us from obtaining this information. Instead of using the user API call, we used a search API call, which takes a string as a query and returns users with usernames starting with the query. We passed in each character a-z and number 0-9 as a separate query, and stored all unique user objects (as many users were returned from multiple queries).
+                <br><br>
+                With the data collected, we can now build links between channels and users, between channels themselves, and between users themselves based on their similar interests, contents, and trends observed through the data. The abundant data collected amounting to almost or more than ten attributes for each of the 'channel’ and 'user' tables, with almost 2 million channels in total, would allow us to easily understand and find the patterns for the characteristics of channels and users and to analyze the links between them. The type of data collection that we have performed would facilitate the process of finding the connections between channels and users and which users are interested in what types of channels. Once the tendency is found, we can use that information to recommend other related channels to the users based on their interests.
+            </p>
     </div>
 </div>
 
