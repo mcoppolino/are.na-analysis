@@ -81,4 +81,4 @@ The table has the following attribute: 'channel_connections'. 'Channel_connectio
 594045,278943,487603
 where 594045 is the target channel id and the rest are ids of channels that contain the target channel.
 
-a. block_connections - (list of ints) the first id is the target channel id and the rest are ids of channels that contain the target channel
+a. channel_connections - (list of ints) the first id is the target channel id and the rest are ids of channels that contain the target channel
