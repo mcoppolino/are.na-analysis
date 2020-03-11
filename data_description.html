@@ -12,11 +12,18 @@
     <div class="col-md-2"></div>
     <div class="col-md-8">
         <div class="page-header center">
-            <h1>[Team Name]<<< DELIVERABLE >>></h1>
+            <h1>scra.per <<< DELIVERABLE >>></h1>
         </div>
-        <h1> Big header</h1>
-        <h6> Small header</h6>
+        <h3>Data source</h3>
         <p>
+            We collected our data directly from Are.na’s API. The three tables consist of all retrievable data related to a website’s “channels”, “users”, and “channel connections”, the last of which associates every channel with a list of channels that share at least one “block” of content in common. While all channel related data is accessible from the API and is public, some fields for our user data are irretrievable without API request permission or scraping. Specifically, we would like to access the IDs of users who follow a channel, so as to better understand the relatedness of channels (i.e. we would like the equivalent of “channel connections” for users who follow channels in common). We have reached out to the Are.na team in hopes of receiving this data in an anonymized form, although we can resort to scraping if need be and anonymize the data ourselves using user ID as a key. Our data sample is a random sample, which should represent the variety of channel lengths and user behaviors found on Are.na.
+        </p>
+
+        <h3>State of data</h3>
+        <p>
+            While Are.na’s API is very straightforward, we are limited in our collection of a user’s “followers” and “followings” for privacy reasons. As mentioned, we are hoping to work around this roadblock, as the specific behavior of users will help us understand how content is related. However, if this is not possible, we will resort to analyzing channel data by itself, leveraging our “channel connections” data to associate content without user data entirely. This avenue will likely necessitate a deeper analysis of content embeddings, keywords, original sources, and file types, which we otherwise could largely ignore with high-level user behavior analysis. Generally, our next step will consist of constructing webs of connectivity based on shared users and contents which we will analyze in terms of content categories before we begin ML training and implementing our recommender system.
+        </p>
+
         Some text
         <ul>
         <li> A bullet point </li>
