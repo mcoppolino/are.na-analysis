@@ -39,16 +39,28 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def channel_request_iterator(batch_size):
     """
     yields a list of channel json data of length batch_size
     """
 
-    print('Requesting channel data from are.na API')
+    print('Establishing connection to channels API')
 
-    page = 2
+    page = 1
+    url = 'http://api.are.na/v2/channels'
+
+    payload = {'page':page, 'per':batch_size}
+    req = requests.get(url, params=payload)
+
+    if req.status_code != 200 or len(req.json()['channels']) == 0:
+        print('Error establishing API connection. Skipping channel write.')
+
+    num_pages = req.json()['total_pages']
+
     while True:
-        url = 'http://api.are.na/v2/channels'
+        print('Requesting channels (page %i of %i)' % (page, num_pages))
+
         payload = {'page':page, 'per':batch_size}
         page += 1
 
@@ -58,15 +70,18 @@ def channel_request_iterator(batch_size):
         if req.status_code != 200 or len(channel_data) == 0:
             break
 
+        print('Writing channel data to csv')
+
         for channel in channel_data:
-            yield channel_data
+            yield channel
+
 
 def user_request_iterator(batch_size):
     """
     yields a list of user json data of length batch_size
     """
 
-    print('Requesting user data from are.na API')
+    print('Establishing connection to search API (to collect users)')
 
     for letter in 'abcdefghijklmnopqrstuvwxyz0123456789':
         page = 1
@@ -74,19 +89,28 @@ def user_request_iterator(batch_size):
         while True:
             url = 'http://api.are.na/v2/search/users/'
             payload = {'q':letter, 'page':page, 'per':batch_size}
-            page += 1
+
 
             req = requests.get(url, params=payload)
 
-            user_data = req.json()['users']
+            user_json = req.json()
+            user_data = user_json['users']
+            num_pages = user_json['total_pages']
 
             if req.status_code != 200 or len(user_data) == 0:
                 break
 
+            print('Writing user data to csv (page %i of %i)' % (page, num_pages))
+            page += 1
+
             for user in user_data:
                 yield user
 
+
 def block_connections_iterator(channels_csv_fp, batch_size):
+
+    print("Requesting block connections from API")
+
     with open(channels_csv_fp, mode='r') as f:
         reader = csv.reader(f)
         next(reader)
@@ -96,6 +120,9 @@ def block_connections_iterator(channels_csv_fp, batch_size):
     for id in channel_ids[1:]:
         page = 1
         out = [id]
+
+        print('Requesting block connections for channel id %i' % id)
+
         while True:
             url = 'http://api.are.na/v2/channels/%s/channels' % id
             payload = {'page':page, 'per':batch_size}
@@ -110,6 +137,7 @@ def block_connections_iterator(channels_csv_fp, batch_size):
             out.extend([item['channel']['id'] for item in block_connections])
 
         if len(out) > 1:
+            print('Writing block connections to csv')
             yield {'id':id, 'block_connections':out}
 
 def channel_connections_iterator(channels_csv_fp, batch_size):
@@ -122,6 +150,8 @@ def channel_connections_iterator(channels_csv_fp, batch_size):
     for id in channel_ids[1:]:
         page = 1
         out = [id]
+
+        print('Requesting channel connections for channel id %i' % id)
 
         while True:
             url = 'http://api.are.na/v2/channels/%s/connections' % id
@@ -137,7 +167,7 @@ def channel_connections_iterator(channels_csv_fp, batch_size):
             out.extend([item['id'] for item in channel_connections])
 
         if len(out) > 1:
-
+            print('Writing channel connections to csv')
             yield {'id':id, 'channel_connections':out}
 
 def write_csv_data(csv_path, data_iterator, target_attrs):
@@ -145,6 +175,9 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
     Opens file from csv_path, and recieves data from data_iterator,
     extracting attributes in target_attrs from json and writing to .csv
     """
+
+    if not os.path.isdir(csv_path.split('/')[0]):
+        os.makedirs('./csv')
 
     if os.path.exists(csv_path):
         os.remove(csv_path)
@@ -156,6 +189,8 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
 
     num_written = 0
     ids = set()
+
+    print('Staged to write data to %s' % csv_path)
 
     for d in data_iterator:
         d['id'] = int(d['id']) #TODO: alter data so all ids are already int
@@ -173,7 +208,7 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
         w.writerow(save_data)
         num_written += 1
 
-        print('Wrote %i rows to %s' % (num_written, csv_path))
+    print('Wrote %i rows to %s' % (num_written, csv_path))
 
     f.close()
     print('Done\n')
@@ -262,16 +297,16 @@ def main():
     user_table_name = args.user_table
     batch_size = args.batch_size
 
-    channel_iterator = channel_request_iterator(batch_size)
-    write_csv_data(channel_csv_fp, channel_iterator, CHANNEL_TARGET_ATTRS)
-    write_channel_csv_to_db(channel_csv_fp, db_fp, channel_table_name)
+    # channel_iterator = channel_request_iterator(batch_size)
+    # write_csv_data(channel_csv_fp, channel_iterator, CHANNEL_TARGET_ATTRS)
+    # write_channel_csv_to_db(channel_csv_fp, db_fp, channel_table_name)
 
-    user_iterator = user_request_iterator(batch_size)
-    write_csv_data(user_csv_fp, user_iterator, USER_TARGET_ATTRS)
-    write_user_csv_to_db(user_csv_fp, db_fp, user_table_name)
+    # user_iterator = user_request_iterator(batch_size)
+    # write_csv_data(user_csv_fp, user_iterator, USER_TARGET_ATTRS)
+    # write_user_csv_to_db(user_csv_fp, db_fp, user_table_name)
 
-    block_conn_iterator = block_connections_iterator(channel_csv_fp, batch_size)
-    write_csv_data(block_conn_csv_fp, block_iterator, BLOCK_CONN_TARGET_ATTRS)
+    # block_conn_iterator = block_connections_iterator(channel_csv_fp, batch_size)
+    # write_csv_data(block_conn_csv_fp, block_conn_iterator, BLOCK_CONN_TARGET_ATTRS)
 
     channel_conn_iterator = channel_connections_iterator(channel_csv_fp, batch_size)
     write_csv_data(channel_conn_csv_fp, channel_conn_iterator, CHANNEL_CONN_TARGET_ATTRS)
