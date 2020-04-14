@@ -12,7 +12,7 @@ USER_TARGET_ATTRS = ['id', 'slug', 'username', 'first_name', 'last_name',
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='are.na data_master collection')
+    parser = argparse.ArgumentParser(description='are.na data collection')
 
     parser.add_argument('-user_csv', help='path to user csv file to be written to', default='data/csv/users.csv')
     parser.add_argument('-user_table', help='user table name in database', default='users')
@@ -24,7 +24,7 @@ def parse_args():
 
 def user_request_iterator(batch_size):
     """
-    yields a list of user json data_master of length batch_size
+    yields a list of user json data of length batch_size
     """
 
     print('Establishing connection to search API (to collect users)')
@@ -45,7 +45,7 @@ def user_request_iterator(batch_size):
             if req.status_code != 200 or len(user_data) == 0:
                 break
 
-            print('Writing user data_master to csv (page %i of %i)' % (page, num_pages))
+            print('Writing user data to csv (page %i of %i)' % (page, num_pages))
             page += 1
 
             for user in user_data:

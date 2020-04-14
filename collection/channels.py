@@ -13,7 +13,7 @@ CHANNEL_TARGET_ATTRS = ['id', 'title', 'created_at', 'updated_at', 'published',
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='are.na data_master collection')
+    parser = argparse.ArgumentParser(description='are.na data collection')
 
     parser.add_argument('-csv', help='path to channel csv file to be written to', default='data/csv/channels.csv')
     parser.add_argument('-table', help='channel table name in database', default='channels')
@@ -25,7 +25,7 @@ def parse_args():
 
 def channel_request_iterator(batch_size):
     """
-    yields a list of channel json data_master of length batch_size
+    yields a list of channel json data of length batch_size
     """
 
     print('Establishing connection to channels API')

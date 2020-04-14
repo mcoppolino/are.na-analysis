@@ -4,7 +4,7 @@ import os
 
 def write_csv_data(csv_path, data_iterator, target_attrs):
     """
-    Opens file from csv_path, and receives data_master from data_iterator,
+    Opens file from csv_path, and receives data from data_iterator,
     extracting attributes in target_attrs from json and writing to .csv
     """
 
@@ -28,10 +28,10 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
     num_written = 0
     ids = set()
 
-    print('Staged to write data_master to %s' % csv_path)
+    print('Staged to write data to %s' % csv_path)
 
     for d in data_iterator:
-        d['id'] = int(d['id'])  # TODO: alter data_master so all ids are already int
+        d['id'] = int(d['id'])  # TODO: alter data so all ids are already int
 
         if d['id'] in ids:
             continue  # if already seen id
@@ -39,9 +39,6 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
         ids.add(d['id'])
 
         save_data = [value for (key, value) in d.items() if key in target_attrs]
-
-        if len(save_data) == 1:  # if from connections TODO: clean up logic
-            save_data = save_data[0]
 
         w.writerow(save_data)
         num_written += 1
