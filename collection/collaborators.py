@@ -20,7 +20,6 @@ def parse_args():
                         default='../data/csv/channels.csv')
     parser.add_argument('-table', help='collaborator table name in database', default='collaborators')
     parser.add_argument('-db', help='path to db file to be written to', default='../data/data.db')
-    parser.add_argument('-batch_size', help='batch_size for requests (as large as possible for speed)', default=10000)
 
     return parser.parse_args()
 
@@ -78,8 +77,6 @@ def write_collab_csv_to_db(csv_fp, db_fp, table_name):
         r = csv.reader(f)
         channel_data = [tuple(line) for line in r]
 
-    import pdb; pdb.set_trace()
-
     print('Writing %i rows from %s to %s' % (len(channel_data), csv_fp, db_fp + '/' + table_name))
     for channel in channel_data:
         insert_command = 'INSERT INTO %s VALUES (?,?)' % table_name
@@ -96,11 +93,10 @@ def main():
     channels_csv_fp = args.channels_csv
     db_fp = args.db
     table = args.table
-    batch_size = args.batch_size
 
     collab_iterator = collaborator_request_iterator(channels_csv_fp)
     write_csv_data(collab_csv_fp, collab_iterator, COLLAB_TARGET_ATTRS)
-    # write_collab_csv_to_db(collab_csv_fp, db_fp, table)
+    write_collab_csv_to_db(collab_csv_fp, db_fp, table)
 
 
 if __name__ == '__main__':

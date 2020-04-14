@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -112,7 +111,7 @@ def cluster(X):
 
     elbow_point_plot(np.arange(1, MAX_CLUSTERS + 1), inertias)
 
-    K = ## optimal number of clusters
+    K = 3  # TODO: set to optimal number of clusters
 
     centroids, idx = np.asarray(sk_learn_cluster(X, K))
     visualize_clusters(X, centroids, idx)
