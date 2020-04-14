@@ -16,7 +16,7 @@ def parse_args():
 
     parser.add_argument('-collab_csv', help='path to collaborators csv file to be written to',
                         default='../data/csv/collaborators.csv')
-    parser.add_argument('-channels_csv', help='path to collaborators csv file to be written to',
+    parser.add_argument('-channels_csv', help='path to channels csv file to be read from',
                         default='../data/csv/channels.csv')
     parser.add_argument('-table', help='collaborator table name in database', default='collaborators')
     parser.add_argument('-db', help='path to db file to be written to', default='../data/data.db')
@@ -31,8 +31,12 @@ def collaborator_request_iterator(channels_csv_fp):
     with open(channels_csv_fp, mode='r') as f:
         r = csv.reader(f)
         next(r)
-        num_yielded = 0
+        num_processed = 0
         for row in r:
+            num_processed += 1
+            if num_processed % 1000 == 0:
+                print('processed %i of %i channels' % (num_processed, 319898))
+
             channel_id = row[0]
             has_collaboration = row[6]
             channel_slug = row[7]
@@ -40,7 +44,7 @@ def collaborator_request_iterator(channels_csv_fp):
             if has_collaboration == 'False':
                 continue
 
-            url = 'http://api.are.na/v2/channels/%s/collaborators/' % channel_slug
+            url = 'http://api.are.na/v2/channels/%s/collaborators/?per=300' % channel_slug
 
             req = requests.get(url)
             if req.status_code != 200:
@@ -55,15 +59,12 @@ def collaborator_request_iterator(channels_csv_fp):
                 continue
 
             if collab_json['total_pages'] > 1:
-                print("SKIPPING FOR PAGINATION: %i" % channel_id)
+                print("SKIPPING FOR PAGINATION: %s" % channel_id)
 
             collab_ids = [user['id'] for user in collaborators if user]
 
             yield {'id': channel_id, 'collaborators': collab_ids}
-            num_yielded += 1
 
-            if num_yielded % 100 == 0:
-                print('processed %i of %i channels' % (num_yielded, 319898))
 
 def write_collab_csv_to_db(csv_fp, db_fp, table_name):
     conn = sqlite3.connect(db_fp)

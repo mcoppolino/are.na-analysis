@@ -9,16 +9,22 @@ def write_csv_data(csv_path, data_iterator, target_attrs):
     """
 
     if os.path.exists(csv_path):
-        overwrite = input('Path %s already exists. Do you want to overwrite it? Y/n ' % csv_path)
+        option = input('''Path %s already exists. Select one of the following options:
+        1. Append to %s
+        2. Delete %s and write new
+        3. Exit application
+        ''' % (csv_path, csv_path, csv_path))
 
-        if overwrite == 'Y':
+        if option == '1':
+            pass
+        elif option == '2':
             os.remove(csv_path)
         else:
             exit(0)
-
-    directory = os.path.dirname(csv_path)
-    if not os.path.isdir(directory):
-        os.makedirs(directory)
+    else:
+        directory = os.path.dirname(csv_path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
 
     f = open(csv_path, 'w+')
     w = csv.writer(f, delimiter=',')
