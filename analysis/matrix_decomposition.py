@@ -16,12 +16,13 @@ class SVDModel:
         self.test_channels = test_channels
         self.test_collabs = test_collabs
 
-        self.M = self.construct_matrix(self.train_channels, self.train_collabs, self.test_channels, self.test_collabs)
+        self.M, self.T = self.construct_matrix(self.train_channels, self.train_collabs, self.test_channels, self.test_collabs)
         self.U = None
         self.D = None
         self.V = None
 
         self.l = l
+
 
     def pretty_print(self, title, viz=True):
         if not viz:  # print with text
@@ -51,16 +52,21 @@ class SVDModel:
                 if collab not in all_collabs:
                     all_collabs.append(collab)
         
-        ones_and_zeros_matrix = np.zeros((len(all_channels), len(all_collabs)))
+        M_train = np.zeros((len(all_channels), len(all_collabs)))
         for i in range(0, len(train_collabs)):
             for collab in train_collabs[i]:
-                ones_and_zeros_matrix[i][all_collabs.index(collab)] = 1
+                M_train[i][all_collabs.index(collab)] = 1
 
-        np.savetxt("train_mat.csv", ones_and_zeros_matrix, delimiter=",")
-        print(ones_and_zeros_matrix)
-        return ones_and_zeros_matrix
+        M_test = M_train
+        for i in range(0, len(test_collabs)):
+            for collab in test_collabs[i]:
+                M_test[i][all_collabs.index(collab)] = 1
 
-
+        np.savetxt("M_train.csv", M_train, delimiter=",")
+        np.savetxt("M_test.csv", M_test, delimiter=",")
+        print(M_train)
+        print(M_test)
+        return M_train, M_test
 
 
     def regular_SVD(self):
