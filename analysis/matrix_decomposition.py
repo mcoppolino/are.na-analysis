@@ -56,7 +56,7 @@ class SVDModel:
             for collab in train_collabs[i]:
                 ones_and_zeros_matrix[i][all_collabs.index(collab)] = 1
 
-        np.savetxt("train_mat.csv", ones_and_zeros_matrox, delimiter=",")
+        np.savetxt("train_mat.csv", ones_and_zeros_matrix, delimiter=",")
         print(ones_and_zeros_matrix)
         return ones_and_zeros_matrix
 
