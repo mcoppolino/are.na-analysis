@@ -3,6 +3,8 @@ from scipy.linalg import svd
 from sklearn.decomposition import TruncatedSVD
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pathlib
+import os
 
 from preprocess import get_collaborators
 
@@ -37,9 +39,13 @@ class SVDModel:
             plt.title(title)
             plt.show()
 
-    def construct_matrix(self):
+    def construct_matrix(self, collabs, channels):
         # might be good to write the output of this to a csv
-
+        print("self.train_collabs:")
+        print(collabs)
+        print("self.train_channels:")
+        print(channels)
+        
 
 
 
@@ -65,9 +71,17 @@ class SVDModel:
 
 
 def main():
-    train_chan, train_collab, test_chan, test_collab = get_collaborators()
-    model = SVDModel(train_chan, train_collab, test_chan, test_collab)
+    print("current working directory: ", os.getcwd())
+    
+    train_chan, train_collab, test_chan, test_collab = get_collaborators(os.getcwd() + "/data/csv/collaborators_with_owners.csv")
+    num_components = 1000
+    model = SVDModel(train_chan, train_collab, test_chan, test_collab, num_components)
     model.truncated_SVD()
+    predictor_matrix = np.matmul(model.U, model.V)
+    print("predictor_matrix:")
+    print(predictor_matrix)
+    # Write the predictor_matrix to a .csv?
+
 
 
 

@@ -5,7 +5,7 @@ from ast import literal_eval
 def split_data(channels, collabs):
     assert(len(channels) == len(collabs))
 
-    train_split = .8 * len(channels)
+    train_split = int(.8 * len(channels))
 
     data = list(zip(channels, collabs))
     train_data = data[:train_split]
@@ -29,6 +29,6 @@ def get_collaborators(collab_fp):
             channel_ids.append(channel_id)
 
             collabs = literal_eval(row[1])
-            collaborators.append[collabs]
+            collaborators.append(collabs)
 
-    return split_data(channel_ids, collabs)
+    return split_data(channel_ids, collaborators)
