@@ -37,6 +37,12 @@ class SVDModel:
             plt.title(title)
             plt.show()
 
+    def construct_matrix(self):
+        # might be good to write the output of this to a csv
+
+
+
+
     def regular_SVD(self):
         m, n = self.M.shape
         self.U, svs, self.V = svd(M)
@@ -61,6 +67,9 @@ class SVDModel:
 def main():
     train_chan, train_collab, test_chan, test_collab = get_collaborators()
     model = SVDModel(train_chan, train_collab, test_chan, test_collab)
+    model.truncated_SVD()
+
+
 
 
 if __name__ == '__main__':
