@@ -1,5 +1,6 @@
 import csv
 from ast import literal_eval
+import random
 
 
 def split_data(channels, collabs):
@@ -8,6 +9,7 @@ def split_data(channels, collabs):
     train_split = int(.8 * len(channels))
 
     data = list(zip(channels, collabs))
+    random.shuffle(data)
     train_data = data[:train_split]
     test_data = data[train_split:]
 
