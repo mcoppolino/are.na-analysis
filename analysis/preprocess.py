@@ -3,10 +3,10 @@ from ast import literal_eval
 import random
 
 
-def split_data(channels, collabs):
+def split_data(channels, collabs, split_proportion):
     assert(len(channels) == len(collabs))
 
-    train_split = int(.8 * len(channels))
+    train_split = int(split_proportion * len(channels))
 
     data = list(zip(channels, collabs))
     random.shuffle(data)
@@ -33,4 +33,6 @@ def get_collaborators(collab_fp):
             collabs = literal_eval(row[1])
             collaborators.append(collabs)
 
-    return split_data(channel_ids, collaborators)
+    # This is the proportion of data we want to keep as training data:
+    split_proportion = 0.98
+    return split_data(channel_ids, collaborators, split_proportion)
