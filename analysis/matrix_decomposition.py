@@ -16,7 +16,7 @@ class SVDModel:
         self.test_channels = test_channels
         self.test_collabs = test_collabs
 
-        self.M = self.construct_matrix(self.train_collabs, self.train_channels)
+        self.M = self.construct_matrix(self.train_channels, self.train_collabs, self.test_channels, self.test_collabs)
         self.U = None
         self.D = None
         self.V = None
@@ -39,13 +39,26 @@ class SVDModel:
             plt.title(title)
             plt.show()
 
-    def construct_matrix(self, collabs, channels):
+    def construct_matrix(self, train_channels, train_collabs, test_channels, test_collabs):
         # might be good to write the output of this to a csv
-        print("self.train_collabs:")
-        print(collabs)
-        print("self.train_channels:")
-        print(channels)
+
+        # These are kind of going to act as the dimensions of the matrix:
+        all_channels = train_channels + test_channels
+        all_collab_lists = train_collabs + test_collabs
+        all_collabs = []
+        for collab_list in all_collab_lists:
+            for collab in collab_list:
+                if collab not in all_collabs:
+                    all_collabs.append(collab)
         
+        ones_and_zeros_matrix = np.zeros((len(all_channels), len(all_collabs)))
+        for i in range(0, len(train_collabs)):
+            for collab in train_collabs[i]:
+                ones_and_zeros_matrix[i][all_collabs.index(collab)] = 1
+        
+        print(ones_and_zeros_matrix)
+        return ones_and_zeros_matrix
+
 
 
 
