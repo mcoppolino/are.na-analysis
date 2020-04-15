@@ -15,8 +15,11 @@ class SVDModel:
         self.train_collabs = train_collabs
         self.test_channels = test_channels
         self.test_collabs = test_collabs
+        self.all_channels = self.train_channels + self.test_channels
+        self.all_collabs = self.train_collabs + self.test_collabs
 
-        self.M, self.T = self.construct_matrix()
+        self.M = None
+        self.T = None
         self.U = None
         self.D = None
         self.V = None
@@ -69,7 +72,8 @@ class SVDModel:
         print(M_train)
         print("M_test matrix:")
         print(M_test)
-        return M_train, M_test
+        self.M = M_train
+        self.T = M_test
 
 
     def regular_SVD(self):
@@ -79,9 +83,9 @@ class SVDModel:
         for i, v in enumerate(svs):
             self.D[i, i] = v
 
-    def truncated_SVD(self):
-        m, n = self.M.shape
-        self.U, svs, self.V = svd(self.M)
+    def truncated_SVD(self, the_matrix):
+        m, n = the_matrix.shape
+        self.U, svs, self.V = svd(the_matrix)
         self.D = np.zeros((m, n))
         for i, v in enumerate(svs):
             self.D[i, i] = v
@@ -92,7 +96,7 @@ class SVDModel:
     def calculate_predictor_matrix(self):
         self.predictor_matrix = np.matmul(self.U, self.V)
         print("predictor_matrix:")
-        print(predictor_matrix)
+        print(self.predictor_matrix)
         # Should we write the predictor_matrix to a .csv?
 
 
@@ -116,6 +120,18 @@ class SVDModel:
         print(should_be_ones)
         print("Percentage of correct predictions: " + str(total_correct_predictions / total_predictions))
 
+    def generate_collaborator_recommendations(self):
+        recommendation_threshold = 0.1
+        indices_of_recommendations_with_recommendation_value = []
+        for i in range(0, len(self.predictor_matrix)):
+            for j in range(0, len(self.predictor_matrix[i])):
+                if self.T[i][j] != 1 and self.predictor_matrix[i][j] > recommendation_threshold:
+                    indices = (i,j)
+                    recommendation_value = self.predictor_matrix[i][j]
+                    indices_of_recommendations.append((indices, recommendation_value))
+        return sorted(indices_of_recommendations_with_recommendation_value, key=lambda a: a[1])
+
+
                     
 
 def main():
@@ -123,9 +139,18 @@ def main():
     num_components = 4000
     model = SVDModel(train_chan, train_collab, test_chan, test_collab, num_components)
     model.construct_matrix()
-    model.truncated_SVD()
+    model.truncated_SVD(model.M)
     model.calculate_predictor_matrix()
-    model.test(model.M, model.T)
+    model.test()
+
+    # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
+    # (Keeping it commented out for now)
+    # num_components = 4000
+    # new_model = SVDModel(train_chan, train_collab, test_chan, test_collab, num_components)
+    # new_model.construct_matrix()
+    # new_model.truncated_SVD(new_model.T)
+    # indices_and_rec_values = new_model.generate_collaborator_recommendations()
+
 
 
 
