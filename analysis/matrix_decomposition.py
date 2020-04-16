@@ -5,18 +5,21 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pathlib
 import os
+import random
 
 from preprocess import get_collaborators
 
 
 class SVDModel:
-    def __init__(self, train_channels, train_collabs, test_channels, test_collabs, l):
-        self.train_channels = train_channels
-        self.train_collabs = train_collabs
-        self.test_channels = test_channels
-        self.test_collabs = test_collabs
-        self.all_channels = self.train_channels + self.test_channels
-        self.all_collabs = self.train_collabs + self.test_collabs
+    def __init__(self, channels, collabs, l):
+        # self.train_channels = train_channels
+        # self.train_collabs = train_collabs
+        # self.test_channels = test_channels
+        # self.test_collabs = test_collabs
+        # self.all_channels = self.train_channels + self.test_channels
+        # self.all_collabs = self.train_collabs + self.test_collabs
+        self.channels = channels
+        self.collabs = collabs
 
         self.M = None
         self.T = None
@@ -48,23 +51,39 @@ class SVDModel:
         # might be good to write the output of this to a csv
 
         # These are kind of going to act as the dimensions of the matrix:
-        all_channels = self.train_channels + self.test_channels
-        all_collab_lists = self.train_collabs + self.test_collabs
+        # all_channels = self.train_channels + self.test_channels
+        # all_collab_lists = self.train_collabs + self.test_collabs
         all_collabs = []
-        for collab_list in all_collab_lists:
+        for collab_list in self.collabs:
             for collab in collab_list:
                 if collab not in all_collabs:
                     all_collabs.append(collab)
         
-        M_train = np.zeros((len(all_channels), len(all_collabs)))
-        for i in range(0, len(self.train_collabs)):
-            for collab in self.train_collabs[i]:
-                M_train[i][all_collabs.index(collab)] = 1
 
-        M_test = M_train.copy()
-        for i in range(0, len(self.test_collabs)):
-            for collab in self.test_collabs[i]:
-                M_test[i + len(self.train_collabs)][all_collabs.index(collab)] = 1
+
+        M_test = np.zeros((len(self.channels), len(all_collabs)))
+        # remember that self.channels and self.collabs are of the same length, and
+        # the items at each index correspond to each other
+        indices_of_ones = []
+        for i in range(0, len(self.channels)):
+            for collab in self.collabs[i]:
+                M_test[i][all_collabs.index(collab)] = 1
+                indices_of_ones.append((i,all_collabs.index(collab)))
+
+
+        M_train = M_test.copy()
+        shuffled_indices = indices_of_ones.copy()
+        random.shuffle(shuffled_indices)
+        proportion_to_keep = 0.99
+        small_portion_of_shuffled_indices = shuffled_indices[0:int((1 - proportion_to_keep) * len(shuffled_indices))]
+        for (i, j) in small_portion_of_shuffled_indices:
+            M_train[i][j] = 0
+
+
+
+        # for i in range(0, len(self.test_collabs)):
+        #     for collab in self.test_collabs[i]:
+        #         M_test[i + len(self.train_collabs)][all_collabs.index(collab)] = 1
 
         np.savetxt("M_train.csv", M_train, delimiter=",")
         np.savetxt("M_test.csv", M_test, delimiter=",")
@@ -100,17 +119,18 @@ class SVDModel:
         np.savetxt("predictor_matrix.csv", self.predictor_matrix, delimiter=",")
 
     def test(self):
-        threshold_for_correct_prediction = 0.1
+        threshold_for_correct_prediction = 0.01
         should_be_ones = []
         total_predictions = 0
         total_correct_predictions = 0
         for i in range(0, len(self.M)):
             for j in range(0, len(self.M[i])):
+                # print("value in predictor matrix at this index: ", self.predictor_matrix[i][j])
                 if self.T[i][j] == 1 and self.M[i][j] == 0:
                     index_tuple = (i,j)
                     prediction = self.predictor_matrix[i][j]
+                    print("prediction: ", prediction)
                     should_be_ones.append((index_tuple, prediction))
-
                     if prediction > 0.1:
                         total_correct_predictions += 1
                     total_predictions += 1
@@ -121,7 +141,7 @@ class SVDModel:
         # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS
 
     def generate_collaborator_recommendations(self):
-        recommendation_threshold = 0.1
+        recommendation_threshold = 0.01
         indices_of_recommendations_with_recommendation_value = []
         channel_and_collaborator_with_recommendation_value = []
         for i in range(0, len(self.predictor_matrix)):
@@ -138,15 +158,16 @@ class SVDModel:
                     
 
 def main():
-    train_chan, train_collab, test_chan, test_collab = get_collaborators(os.getcwd() + "/data/csv/collaborators_with_owners.csv")
+    channels, collabs = get_collaborators(os.getcwd() + "/data/csv/collaborators_with_owners.csv")
     num_components = 4000
-    model = SVDModel(train_chan, train_collab, test_chan, test_collab, num_components)
+    model = SVDModel(channels, collabs, num_components)
     model.construct_matrix()
     model.truncated_SVD(model.M)
     model.calculate_predictor_matrix()
     model.test()
-    model.pretty_print(model.predictor_matrix, "Predictor matrix visualization")
+    # model.pretty_print(model.predictor_matrix, "Predictor matrix visualization")
     
+
     # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
     # (Keeping it commented out for now)
     # num_components = 4000
