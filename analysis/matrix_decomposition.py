@@ -28,10 +28,10 @@ class SVDModel:
         self.l = l
 
 
-    def pretty_print(self, title, viz=True):
+    def pretty_print(self, matrix, title, viz=True):
         if not viz:  # print with text
             print(title)
-            rows, cols = self.M.shape
+            rows, cols = matrix.shape
             for i in range(rows):
                 r = []
                 for j in range(cols):
@@ -40,7 +40,7 @@ class SVDModel:
             print()
         else:
             plt.figure(figsize=(3, 3))
-            sns.heatmap(self.M, annot=True, fmt=".01f", cmap="Blues", cbar=False)
+            sns.heatmap(matrix, annot=True, fmt=".01f", cmap="Blues", cbar=False)
             plt.title(title)
             plt.show()
 
@@ -97,8 +97,7 @@ class SVDModel:
         self.predictor_matrix = np.matmul(self.U, self.V)
         print("predictor_matrix:")
         print(self.predictor_matrix)
-        # Should we write the predictor_matrix to a .csv?
-
+        np.savetxt("predictor_matrix.csv", self.predictor_matrix, delimiter=",")
 
     def test(self):
         threshold_for_correct_prediction = 0.1
@@ -119,17 +118,21 @@ class SVDModel:
         print("Here is a list of prediction values for testing (they should be close to 1):")
         print(should_be_ones)
         print("Percentage of correct predictions: " + str(total_correct_predictions / total_predictions))
+        # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS
 
     def generate_collaborator_recommendations(self):
         recommendation_threshold = 0.1
         indices_of_recommendations_with_recommendation_value = []
+        channel_and_collaborator_with_recommendation_value = []
         for i in range(0, len(self.predictor_matrix)):
             for j in range(0, len(self.predictor_matrix[i])):
                 if self.T[i][j] != 1 and self.predictor_matrix[i][j] > recommendation_threshold:
                     indices = (i,j)
                     recommendation_value = self.predictor_matrix[i][j]
                     indices_of_recommendations.append((indices, recommendation_value))
+                    channel_and_collaborator_with_recommendation_value.append(self.all_channels[i],self.all_collabs[j],recommendation_value)
         return sorted(indices_of_recommendations_with_recommendation_value, key=lambda a: a[1])
+        # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS
 
 
                     
@@ -142,7 +145,8 @@ def main():
     model.truncated_SVD(model.M)
     model.calculate_predictor_matrix()
     model.test()
-
+    model.pretty_print(model.predictor_matrix, "Predictor matrix visualization")
+    
     # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
     # (Keeping it commented out for now)
     # num_components = 4000
@@ -150,7 +154,6 @@ def main():
     # new_model.construct_matrix()
     # new_model.truncated_SVD(new_model.T)
     # indices_and_rec_values = new_model.generate_collaborator_recommendations()
-
 
 
 
