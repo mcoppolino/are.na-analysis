@@ -54,7 +54,10 @@ def sort_by_ids(mat, channel_dict, collab_dict, sort_by_channel=True, sort_by_co
 
 
 def plot_matrix(mat, output_dir, title):
-    plt.imshow(mat, cmap='hot')
+    if title == 'M_hat':
+        plt.imshow(mat, cmap='hot', vmin=0.1)
+    else:
+        plt.imshow(mat, cmap='hot')
     plt.colorbar()
     plt.title(title)
     plt.savefig(output_dir + '/%s.png' % title)
@@ -89,6 +92,7 @@ def main():
     plot_matrix(D, output_dir, 'D')
     plot_matrix(V, output_dir, 'V')
     plot_matrix(M_hat, output_dir, 'M_hat')
+    plot_matrix(np.absolute(np.subtract(T, M_hat)), output_dir, 'Error')
 
 
 if __name__ == '__main__':
