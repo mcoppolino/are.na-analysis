@@ -1,25 +1,15 @@
 import csv
 from ast import literal_eval
-import random
+import numpy as np
 
 
-# def split_data(channels, collabs, split_proportion):
-#     assert(len(channels) == len(collabs))
 
-#     train_split = int(split_proportion * len(channels))
-
-#     data = list(zip(channels, collabs))
-#     random.shuffle(data)
-#     train_data = data[:train_split]
-#     test_data = data[train_split:]
-
-#     train_channels, train_collabs = zip(*train_data)
-#     test_channels, test_collabs = zip(*test_data)
-
-#     return train_channels, train_collabs, test_channels, test_collabs
-
-
-def get_collaborators(collab_fp):
+def get_collaborators(collab_fp, n = 0):
+    """
+    :param collab_fp: filepath to collaborators + owners csv
+    :param n: length of data to return, from top of all data sorted by length of collaborators
+    :return: channel_ids, collaborators of length n
+    """
     with open(collab_fp, 'r') as f:
         r = csv.reader(f)
         next(r)
@@ -32,6 +22,12 @@ def get_collaborators(collab_fp):
 
             collabs = literal_eval(row[1])
             collaborators.append(collabs)
+
+    lengths = [len(collabs) for collabs in collaborators]
+    data = zip(channel_ids, collaborators, lengths)
+    data = sorted(data, key=lambda x: x[2], reverse=True)
+    data = data[:n]
+    channel_ids, collaborators, _ = zip(*data)
 
     return channel_ids, collaborators
 

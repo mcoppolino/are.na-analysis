@@ -1,3 +1,5 @@
+import csv
+
 import numpy as np
 import pickle
 from scipy.linalg import svd
@@ -29,41 +31,34 @@ class SVDModel:
                 if collab not in all_collabs:
                     all_collabs.append(collab)
 
-        M_test = np.zeros((len(self.channels), len(all_collabs)))
+        self.T = np.zeros((len(self.channels), len(all_collabs)))
 
         # channel i from self.channels[i] has collaborators self.collaborators[i]
         indices_of_ones = []
         for i in range(len(self.channels)):
             for collab in self.collabs[i]:
-                M_test[i][all_collabs.index(collab)] = 1
+                self.T[i][all_collabs.index(collab)] = 1
                 indices_of_ones.append((i, all_collabs.index(collab)))
 
-        M_train = M_test.copy()
+        self.M = self.T.copy()
         shuffled_indices = indices_of_ones.copy()
         random.shuffle(shuffled_indices)
         proportion_to_keep = 0.99
         small_portion_of_shuffled_indices = shuffled_indices[0:int((1 - proportion_to_keep) * len(shuffled_indices))]
         for (i, j) in small_portion_of_shuffled_indices:
-            M_train[i][j] = 0
+            self.M[i][j] = 0
 
-        self.M = M_train
-        self.T = M_test
 
     def regular_SVD(self):
         print('Applying regular SVD')
-        m, n = self.M.shape
-        self.U, svs, self.V = svd(M)
-        self.D = np.zeros((m, n))
-        for i, v in enumerate(svs):
-            self.D[i, i] = v
+        self.U, self.D, self.V = svd(self.M)
+        self.D = np.diag(self.D)
 
     def truncated_SVD(self):
         print("Applying truncated SVD")
         m, n = self.M.shape
-        self.U, svs, self.V = svd(self.M)
-        self.D = np.zeros((m, n))
-        for i, v in enumerate(svs):
-            self.D[i, i] = v
+        self.U, self.D, self.V = svd(self.M)
+        self.D = np.diag(self.D)
         self.U = self.U[:, 0:self.l]
         self.D = self.D[0:self.l, 0:self.l]
         self.V = self.V[0:self.l, :]
@@ -76,17 +71,17 @@ class SVDModel:
         print("Testing model")
         threshold_for_correct_prediction = 0.1
         should_be_ones = []
-        total_predictions = 0
-        total_correct_predictions = 0
-        for i in range(0, len(self.M)):
-            for j in range(0, len(self.M[i])):
+        num_predicted = 0
+        num_correct = 0
+        for i in range(len(self.M)):
+            for j in range(len(self.M[i])):
                 if self.T[i][j] == 1 and self.M[i][j] == 0:
                     index_tuple = (i, j)
                     prediction = self.M_hat[i][j]
                     should_be_ones.append((index_tuple, prediction))
                     if prediction > threshold_for_correct_prediction:
-                        total_correct_predictions += 1
-                    total_predictions += 1
+                        num_correct += 1
+                    num_predicted += 1
         total_correct_random_predictions = 0
         random_non_one_indices = []
         how_many_random = 10000
@@ -103,7 +98,7 @@ class SVDModel:
 
         # print("Here is a list of prediction values for testing (they should be close to 1):")
         # print(should_be_ones)
-        model_accuracy = total_correct_predictions / total_predictions
+        model_accuracy = num_correct / num_predicted
         random_accuracy = total_correct_random_predictions / how_many_random
 
         return model_accuracy, random_accuracy
@@ -131,21 +126,22 @@ class SVDModel:
 
 
 def main():
-    channels, collabs = get_collaborators("../data/csv/collaborators_with_owners.csv")
-    truncated_dim = 4000
+    channels, collabs = get_collaborators("../data/csv/collaborators_with_owners.csv", n=1000)
+    truncated_dim = 200
+
     model = SVDModel(channels, collabs, truncated_dim)
     model.construct_matrix()
     model.truncated_SVD()
     model.calculate_predictions()
     model_acc, random_acc = model.test()
-    print("Model accuracy: %d\nRandom accuracy: %d\n" % model_acc, random_acc)
+    print("Model accuracy: %d\nRandom accuracy: %d\n" % (model_acc, random_acc))
 
-    pickle.dump(model.M, open('../data/results/M.pkl', 'w'))
-    pickle.dump(model.T, open('../data/results/M.pkl', 'w'))
-    pickle.dump(model.S, open('../data/results/S.pkl', 'w'))
-    pickle.dump(model.V, open('../data/results/V.pkl', 'w'))
-    pickle.dump(model.D, open('../data/results/D.pkl', 'w'))
-    pickle.dump(model.M_hat, open('../data/results/M_hat.pkl', 'w'))
+    np.save('../data/results/M', model.M)
+    np.save('../data/results/T', model.T)
+    np.save('../data/results/U', model.U)
+    np.save('../data/results/D', model.D)
+    np.save('../data/results/V', model.V)
+    np.save('../data/results/M_hat', model.M_hat)
 
 
 if __name__ == '__main__':

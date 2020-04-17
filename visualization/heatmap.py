@@ -10,7 +10,7 @@ import pandas as pd
 vmin = 0.0999
 
 def get_spy(mat, vmin):
-    plt.spy(mat, precision=vmin, markersize=2)
+    return plt.spy(mat, precision=vmin, markersize=2)
 
 def get_heat(mat):
     plt.imshow(mat)
