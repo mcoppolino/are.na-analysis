@@ -1,11 +1,12 @@
 import numpy as np
 from scipy.linalg import svd
+import random
 from preprocess import get_collaborators
 
 
 class SVDModel:
     def __init__(self, channels, collabs, trunc_len):
-        print("Initializing model")
+        print("Initializing model...")
         self.channels = channels  # guaranteed sorted
         self.collaborators = collabs
         self.trunc_len = trunc_len
@@ -22,8 +23,8 @@ class SVDModel:
 
         self.M_hat = None  # M_hat[i][j] indicates the likelihood that user index i should collab on channel index j
 
-    def construct_matrix(self):
-        print('Constructing M and T')
+    def construct_matrices_and_dicts(self):
+        print('Constructing M, T, channels_dict, collab_dict...')
 
         # construct channel dict (guaranteed sorted, so no issues during visualization)
         num_channels = 0
@@ -72,57 +73,40 @@ class SVDModel:
         self.T[x[remove], y[remove]] = 0
 
     def regular_svd(self):
-        print('Applying regular SVD')
+        print('Applying regular SVD...')
         self.U, self.D, self.V = svd(self.M)
         self.D = np.diag(self.D)
 
     def truncated_svd(self):
         self.regular_svd()
-        print('Truncating U, D, V')
+        print('Truncating U, D, V...')
         self.U = self.U[:, 0:self.trunc_len]
         self.D = self.D[0:self.trunc_len, 0:self.trunc_len]
         self.V = self.V[0:self.trunc_len, :]
 
     def calculate_predictions(self):
-        print('Calculating predictions')
+        print('Calculating predictions...')
         self.M_hat = np.matmul(self.U, self.V)
+        self.M_hat /= np.linalg.norm(self.M_hat, axis=0, keepdims=True)
 
-    def test(self):
-        return 0, 0
-        # print("Testing model")
-        # threshold_for_correct_prediction = 0.1
-        # should_be_ones = []
-        # num_predicted = 0
-        # num_correct = 0
-        # for i in range(len(self.M)):
-        #     for j in range(len(self.M[i])):
-        #         if self.T[i][j] == 1 and self.M[i][j] == 0:
-        #             index_tuple = (i, j)
-        #             prediction = self.M_hat[i][j]
-        #             should_be_ones.append((index_tuple, prediction))
-        #             if prediction > threshold_for_correct_prediction:
-        #                 num_correct += 1
-        #             num_predicted += 1
-        # total_correct_random_predictions = 0
-        # random_non_one_indices = []
-        # how_many_random = 10000
-        # a = 0
-        # while a < how_many_random:
-        #     random_i = random.randint(0,len(self.T)-1)
-        #     random_j = random.randint(0,len(self.T[0])-1)
-        #     if self.T[random_i][random_i] != 1:
-        #         random_non_one_indices.append((random_i,random_j))
-        #         a += 1
-        # for i, j in random_non_one_indices:
-        #     if self.M_hat[i][j] > threshold_for_correct_prediction:
-        #         total_correct_random_predictions += 1
-        #
-        # # print("Here is a list of prediction values for testing (they should be close to 1):")
-        # # print(should_be_ones)
-        # model_accuracy = num_correct / num_predicted
-        # random_accuracy = total_correct_random_predictions / how_many_random
-        #
-        # return model_accuracy, random_accuracy
+    def test(self, thresh):
+        print("Testing model...")
+
+        test_idxs = np.where(self.M != self.T)
+        predictions = self.M_hat[test_idxs]
+
+        num_predicted = len(test_idxs[0])
+        num_correct = np.count_nonzero(predictions >= thresh)
+        test_values_above_thresh = num_correct / num_predicted
+
+        non_test_idxs = np.where((self.T == self.M) & (self.T == 0))
+        predictions = self.M_hat[non_test_idxs]
+
+        num_predicted = len(non_test_idxs[0])
+        num_correct = np.count_nonzero(predictions >= thresh)
+        non_test_values_above_thresh = num_correct / num_predicted
+
+        return test_values_above_thresh, non_test_values_above_thresh
 
     # def generate_collaborator_recommendations(self):
     #     recommendation_threshold = 0.1
@@ -147,16 +131,20 @@ class SVDModel:
 
 
 def main():
-    channels, collabs = get_collaborators("../data/csv/collaborators_with_owners.csv", n=100)
-
     trunc_p = 0.4
+    test_thresh = 0.1
+
+    collabs_csv = "../data/csv/collaborators_with_owners.csv"
+    channels, collabs = get_collaborators(collabs_csv)
+
     truncated_dim = int(trunc_p * len(channels))
 
     model = SVDModel(channels, collabs, truncated_dim)
-    model.construct_matrix()
+    model.construct_matrices_and_dicts()
     model.truncated_svd()
     model.calculate_predictions()
-    model_acc, random_acc = model.test()
+    test_above_thresh, non_test_above_thresh = model.test(test_thresh)
+    print(test_above_thresh, non_test_above_thresh)
 
     np.save('../data/results/M', model.M)
     np.save('../data/results/T', model.T)
