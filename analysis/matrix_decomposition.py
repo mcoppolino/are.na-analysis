@@ -109,6 +109,9 @@ class SVDModel:
         self.D = np.zeros((m, n))
         for i, v in enumerate(svs):
             self.D[i, i] = v
+        np.savetxt("U_matrix.csv", self.U, delimiter=",")
+        np.savetxt("D_matrix.csv", self.D, delimiter=",")
+        np.savetxt("V_matrix.csv", self.V, delimiter=",")
         self.U = self.U[:, 0:self.l]
         self.D = self.D[0:self.l, 0:self.l]
         self.V = self.V[0:self.l, :]
@@ -121,7 +124,7 @@ class SVDModel:
         np.savetxt("predictor_matrix.csv", self.predictor_matrix, delimiter=",")
 
     def test(self):
-        threshold_for_correct_prediction = 0.01
+        threshold_for_correct_prediction = 0.1
         should_be_ones = []
         total_predictions = 0
         total_correct_predictions = 0
@@ -133,12 +136,12 @@ class SVDModel:
                     prediction = self.predictor_matrix[i][j]
                     print("prediction: ", prediction)
                     should_be_ones.append((index_tuple, prediction))
-                    if prediction > 0.1:
+                    if prediction > threshold_for_correct_prediction:
                         total_correct_predictions += 1
                     total_predictions += 1
         total_correct_random_predictions = 0
         random_non_one_indices = []
-        how_many_random = 2000
+        how_many_random = 10000
         a = 0
         while a < how_many_random:
             random_i = random.randint(0,len(self.T)-1)
@@ -159,7 +162,7 @@ class SVDModel:
 
 
     def generate_collaborator_recommendations(self):
-        recommendation_threshold = 0.01
+        recommendation_threshold = 0.1
         indices_of_recommendations_with_recommendation_value = []
         channel_and_collaborator_with_recommendation_value = []
         all_collabs = []
