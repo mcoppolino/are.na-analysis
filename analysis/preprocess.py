@@ -63,4 +63,3 @@ def get_collaborators(collab_fp, n=None, min_collabs=1, max_collabs=math.inf):
 
     channel_ids, collaborators, _ = zip(*data)
     return channel_ids, collaborators
-
