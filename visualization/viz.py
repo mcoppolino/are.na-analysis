@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def parse_args():
     parser = ArgumentParser()
 
@@ -16,9 +17,9 @@ def parse_args():
 
 
 def load_data(input_dir):
+    print('Loading data from %s' % input_dir)
     npz_file = input_dir + '/svd.npz'
     with np.load(npz_file, allow_pickle=True) as data:
-        print(data.files)
         M = data['M']
         T = data['T']
         U = data['U']
@@ -54,12 +55,15 @@ def sort_by_ids(mat, channel_dict, collab_dict, sort_by_channel=True, sort_by_co
 
 
 def plot_matrix(mat, output_dir, title):
+    print("Plotting %s" % title)
     if title == 'M_hat':
         plt.imshow(mat, cmap='hot', vmin=0.1)
     else:
         plt.imshow(mat, cmap='hot')
     plt.colorbar()
     plt.title(title)
+    plt.xlabel('Channel')
+    plt.ylabel('Collaborator')
     plt.savefig(output_dir + '/%s.png' % title)
     plt.close()
 
@@ -76,6 +80,7 @@ def main():
     channel_dict = dict(map(reversed, channel_dict.items()))
     collab_dict = dict(map(reversed, collab_dict.items()))
 
+    print("Sorting by id")
     M = sort_by_ids(M, channel_dict, collab_dict)
     T = sort_by_ids(T, channel_dict, collab_dict)
     U = sort_by_ids(U, channel_dict, collab_dict, sort_by_channel=False)
