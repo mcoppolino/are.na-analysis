@@ -88,9 +88,9 @@ class SVDModel:
         np.savetxt("M_train.csv", M_train.astype(int), delimiter=",")
         np.savetxt("M_test.csv", M_test.astype(int), delimiter=",")
         print("M_train matrix:")
-        print(M_train)
+        print(M_train.astype(int))
         print("M_test matrix:")
-        print(M_test)
+        print(M_test.astype(int))
         self.M = M_train
         self.T = M_test
 
