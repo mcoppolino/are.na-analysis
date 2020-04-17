@@ -103,6 +103,7 @@ class SVDModel:
             self.D[i, i] = v
 
     def truncated_SVD(self, the_matrix):
+        ("Applying truncated SVD...")
         m, n = the_matrix.shape
         self.U, svs, self.V = svd(the_matrix)
         self.D = np.zeros((m, n))
@@ -113,6 +114,7 @@ class SVDModel:
         self.V = self.V[0:self.l, :]
 
     def calculate_predictor_matrix(self):
+        print("Calculating predictor matrix...")
         self.predictor_matrix = np.matmul(self.U, self.V)
         print("predictor_matrix:")
         print(self.predictor_matrix)
@@ -134,25 +136,49 @@ class SVDModel:
                     if prediction > 0.1:
                         total_correct_predictions += 1
                     total_predictions += 1
+        total_correct_random_predictions = 0
+        random_non_one_indices = []
+        how_many_random = 2000
+        a = 0
+        while a < how_many_random:
+            random_i = random.randint(0,self.T-1)
+            random_j = random.randint(0,self.T[0]-1)
+            if self.T[random_i][random_i] != 1:
+                random_non_one_indices.append((random_i,random_j))
+                a += 1
+        for (i,j) in random_non_one_indices:
+            if self.predictor_matrix[i][j] > threshold_for_correct_prediction:
+                total_correct_random_predictions += 1
+            
         
         print("Here is a list of prediction values for testing (they should be close to 1):")
         print(should_be_ones)
-        print("Percentage of correct predictions: " + str(total_correct_predictions / total_predictions))
-        # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS
+        print("Proportion of correct predictions: " + str(total_correct_predictions / total_predictions))
+        print("Proportion of correct predictions for random indices: " + str(total_correct_random_predictions / how_many_random))
+
+
+        # AT SOME POINT IT COULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS (ALBEIT UNNECESSARY)
 
     def generate_collaborator_recommendations(self):
         recommendation_threshold = 0.01
         indices_of_recommendations_with_recommendation_value = []
         channel_and_collaborator_with_recommendation_value = []
+        all_collabs = []
+        for collab_list in self.collabs:
+            for collab in collab_list:
+                if collab not in all_collabs:
+                    all_collabs.append(collab)
         for i in range(0, len(self.predictor_matrix)):
             for j in range(0, len(self.predictor_matrix[i])):
                 if self.T[i][j] != 1 and self.predictor_matrix[i][j] > recommendation_threshold:
                     indices = (i,j)
                     recommendation_value = self.predictor_matrix[i][j]
                     indices_of_recommendations.append((indices, recommendation_value))
-                    channel_and_collaborator_with_recommendation_value.append(self.all_channels[i],self.all_collabs[j],recommendation_value)
+                    channel_and_collaborator_with_recommendation_value.append(self.channels[i],all_collabs[j],recommendation_value)
+        # print(sorted(indices_of_recommendations_with_recommendation_value, key=lambda a: a[1]))
+        print(sorted(channel_and_collaborator_with_recommendation_value, key=lambda a: a[2]))
         return sorted(indices_of_recommendations_with_recommendation_value, key=lambda a: a[1])
-        # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS
+        # AT SOME POINT IT WOULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS (which was done)
 
 
                     
@@ -166,16 +192,21 @@ def main():
     model.calculate_predictor_matrix()
     model.test()
     # model.pretty_print(model.predictor_matrix, "Predictor matrix visualization")
-    
 
     # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
-    # (Keeping it commented out for now)
+    model.truncated_SVD(new_model.T)
+    model.calculate_predictor_matrix()
+    model.generate_collaborator_recommendations()
+
+
+
+
+    # # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
     # num_components = 4000
-    # new_model = SVDModel(train_chan, train_collab, test_chan, test_collab, num_components)
+    # new_model = SVDModel(channels, collabs, num_components)
     # new_model.construct_matrix()
     # new_model.truncated_SVD(new_model.T)
-    # indices_and_rec_values = new_model.generate_collaborator_recommendations()
-
+    # # indices_and_rec_values = new_model.generate_collaborator_recommendations()
 
 
 
