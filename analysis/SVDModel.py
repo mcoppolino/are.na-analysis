@@ -50,14 +50,14 @@ class SVDModel:
         num_collaborators -= 1
 
         # initialize M
-        self.M = np.zeros((num_channels + 1, num_collaborators + 1))
+        self.M = np.zeros((num_collaborators + 1, num_channels + 1, ))
 
         # populate M
         for channel, collabs in zip(self.channels, self.collaborators):
             channel_idx = self.channel_dict[channel]
             for user in collabs:
                 user_idx = self.collab_dict[user]
-                self.M[channel_idx][user_idx] = 1
+                self.M[user_idx][channel_idx] = 1
 
         # initialize T
         self.T = self.M.copy()
@@ -85,7 +85,7 @@ class SVDModel:
     def calculate_predictions(self):
         print('Calculating predictions...')
         self.M_hat = np.matmul(self.U, self.V)
-        self.M_hat /= np.linalg.norm(self.M_hat, axis=0, keepdims=True)
+        self.M_hat /= np.linalg.norm(self.M_hat, axis=1, keepdims=True)
 
     def train(self):
         print("Training model...")

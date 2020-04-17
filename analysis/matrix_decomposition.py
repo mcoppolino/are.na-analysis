@@ -1,7 +1,8 @@
+import os
 from argparse import ArgumentParser
 import math
 import numpy as np
-import os
+import pickle
 from SVDModel import SVDModel
 from preprocess import get_collaborators
 
@@ -11,7 +12,7 @@ def parse_args():
 
     parser.add_argument('-collabs_csv', help='path to collaborators + owners csv file to read data',
                         default='../data/csv/collaborators_with_owners.csv')
-    parser.add_argument('-results_path', help='path to results directory to save output', default='../data/results')
+    parser.add_argument('-outdir', help='path to output directory', default='../data/result')
 
     parser.add_argument('-n', help='maximum size of data to be trained on',
                         default=None, type=int)
@@ -31,7 +32,7 @@ def main():
     # parse arguments from command line
     args = parse_args()
     collabs_csv_path = args.collabs_csv
-    results_path = args.results_path
+    outdir = args.outdir
     test_thresh = args.test_thresh
     trunc_p = args.trunc_p
     n = args.n
@@ -53,22 +54,22 @@ def main():
     # test model
     test_above_thresh, non_test_above_thresh = model.test(test_thresh)
 
-    # print results
+    # print test metrics
     print(test_above_thresh, non_test_above_thresh)
 
-    # initialize results directory
-    if not os.path.exists(results_path):
-        os.makedirs(results_path)
+    # verify out directory exists
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
-    # save results
-    np.save(results_path + '/M', model.M)
-    np.save(results_path + '/T', model.T)
-    np.save(results_path + '/U', model.U)
-    np.save(results_path + '/D', model.D)
-    np.save(results_path + '/V', model.V)
-    np.save(results_path + '/M_hat', model.M_hat)
-    np.save(results_path + '/channel_dict', model.channel_dict)
-    np.save(results_path + '/collab_dict', model.collab_dict)
+    # save calculated data
+    print('Writing calculated data to %s' % outdir)
+    npz_file = outdir + '/svd.npz'
+    dicts_file = outdir + '/dicts.p'
+    np.savez(npz_file, M=model.M, T=model.T, U=model.U, D=model.D, V=model.V, M_hat=model.M_hat)
+    dicts = [model.channel_dict, model.collab_dict]
+    pickle.dump(dicts, open(dicts_file, 'wb'))
+
+    print('Done')
 
 
 if __name__ == '__main__':
