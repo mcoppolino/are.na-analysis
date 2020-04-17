@@ -85,8 +85,8 @@ class SVDModel:
         #     for collab in self.test_collabs[i]:
         #         M_test[i + len(self.train_collabs)][all_collabs.index(collab)] = 1
 
-        np.savetxt("M_train.csv", M_train, delimiter=",")
-        np.savetxt("M_test.csv", M_test, delimiter=",")
+        np.savetxt("M_train.csv", M_train.astype(int), delimiter=",")
+        np.savetxt("M_test.csv", M_test.astype(int), delimiter=",")
         print("M_train matrix:")
         print(M_train)
         print("M_test matrix:")
@@ -109,9 +109,9 @@ class SVDModel:
         self.D = np.zeros((m, n))
         for i, v in enumerate(svs):
             self.D[i, i] = v
-        np.savetxt("U_matrix.csv", self.U, delimiter=",")
-        np.savetxt("D_matrix.csv", self.D, delimiter=",")
-        np.savetxt("V_matrix.csv", self.V, delimiter=",")
+        np.savetxt("U_matrix.csv", np.around(self.U, 3), delimiter=",")
+        np.savetxt("D_matrix.csv", np.around(self.D, 3), delimiter=",")
+        np.savetxt("V_matrix.csv", np.around(self.V, 3), delimiter=",")
         self.U = self.U[:, 0:self.l]
         self.D = self.D[0:self.l, 0:self.l]
         self.V = self.V[0:self.l, :]
@@ -121,7 +121,7 @@ class SVDModel:
         self.predictor_matrix = np.matmul(self.U, self.V)
         print("predictor_matrix:")
         print(self.predictor_matrix)
-        np.savetxt("predictor_matrix.csv", self.predictor_matrix, delimiter=",")
+        np.savetxt("predictor_matrix.csv", np.around(self.predictor_matrix, 3), delimiter=",")
 
     def test(self):
         threshold_for_correct_prediction = 0.1
