@@ -141,8 +141,8 @@ class SVDModel:
         how_many_random = 2000
         a = 0
         while a < how_many_random:
-            random_i = random.randint(0,self.T-1)
-            random_j = random.randint(0,self.T[0]-1)
+            random_i = random.randint(0,len(self.T)-1)
+            random_j = random.randint(0,len(self.T[0])-1)
             if self.T[random_i][random_i] != 1:
                 random_non_one_indices.append((random_i,random_j))
                 a += 1
@@ -155,9 +155,8 @@ class SVDModel:
         print(should_be_ones)
         print("Proportion of correct predictions: " + str(total_correct_predictions / total_predictions))
         print("Proportion of correct predictions for random indices: " + str(total_correct_random_predictions / how_many_random))
-
-
         # AT SOME POINT IT COULD BE GOOD TO CONVERT THE INDICES TO CHANNELS AND COLLABORATORS (ALBEIT UNNECESSARY)
+
 
     def generate_collaborator_recommendations(self):
         recommendation_threshold = 0.01
@@ -194,7 +193,7 @@ def main():
     # model.pretty_print(model.predictor_matrix, "Predictor matrix visualization")
 
     # This would be the code we would use to actually run our algorithm to suggest new_collaborators:
-    model.truncated_SVD(new_model.T)
+    model.truncated_SVD(model.T)
     model.calculate_predictor_matrix()
     model.generate_collaborator_recommendations()
 
