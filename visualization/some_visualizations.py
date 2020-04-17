@@ -37,6 +37,7 @@ collab_lens = []
 for collabs_mini_list in collabs:
     collab_lens.append(len(collabs_mini_list))
 
-plt.scatter(collab_lens, average_non_one_value)
+plt.scatter(collab_lens, average_non_one_values)
+plt.show()
 
 
