@@ -4,6 +4,7 @@ import argparse
 import sys
 csv.field_size_limit(sys.maxsize)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='add owners to collaborator data and save to csv')
 

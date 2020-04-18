@@ -56,11 +56,12 @@ for i in range(0,len(tracker_sum)):
     else:
         avg_non_one_values_for_spec_num_collabs.append(0)
 
+
+
 x_axis = list(range(0,100))
-# y_axis = avg_non_one_values_for_spec_num_collabs
-y_axis = list(range(0,100))
+y_axis = avg_non_one_values_for_spec_num_collabs
 fig = plt.figure()
-ax = fig.add_axes([0,0,1,1])
+ax = plt.gca()
 ax.bar(x_axis, y_axis)
 ax.set_title('Average Values in Prediction Matrix for Corresponding "0" Entries in Original '\
              'Channels-Collaborator Matrix for Channels of Certain Number of Collaborators')
@@ -75,6 +76,7 @@ plt.show()
 # width = 0.35
 # fig = plt.figure()
 # ax = fig.add_axes([0,0,1,1])
+# ax = plt.gca()
 # ax.bar(ind, menMeans, width, color='r')
 # ax.bar(ind, womenMeans, width,bottom=menMeans, color='b')
 # ax.set_ylabel('Scores')
