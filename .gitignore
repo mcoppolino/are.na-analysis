@@ -1,6 +1,4 @@
 .idea
 .DS_Store
 __pycache__
-csv
-data.db
-!data/csv/collaborators_with_owners.csv
+data
