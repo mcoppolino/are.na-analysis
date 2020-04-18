@@ -9,40 +9,43 @@ def parse_args():
     parser = ArgumentParser()
 
     parser.add_argument('-input_dir', help='path to directory containing results of matrix decomposition',
-                        default='../data/result_test')
+                        default='../data/model')
     parser.add_argument('-output_dir', help='path to output directory to save visuals',
-                        default='../data/plots_test')
+                        default='./plots')
 
     return parser.parse_args()
 
 
-def load_data(input_dir):
-    print('Loading data from %s' % input_dir)
-    npz_file = input_dir + '/svd.npz'
-    with np.load(npz_file, allow_pickle=True) as data:
-        M = data['M']
-        T = data['T']
-        U = data['U']
-        D = data['D']
-        V = data['V']
-        M_hat = data['M_hat']
+def load_data(input_directory):
+    print('Loading data from %s' % input_directory)
 
-    dicts_file = input_dir + '/dicts.p'
+    npz_file = input_directory + '/svd.npz'
+    dicts_file = input_directory + '/dicts.p'
+
+    # Assert load files exist
+    if not os.path.exists(npz_file):
+        print('load_data failed: %s does not exist. Exiting.' % npz_file)
+        exit(0)
+    if not os.path.exists(dicts_file):
+        print('load_data failed: %s does not exist. Exiting.' % dicts_file)
+        exit(0)
+
+    data_dict = np.load(npz_file, allow_pickle=True)
     [channel_dict, collab_dict] = pickle.load(open(dicts_file, 'rb'))
 
-    return M, T, U, D, V, M_hat, channel_dict, collab_dict
+    return data_dict, channel_dict, collab_dict
 
 
-def sort_by_ids(mat, channel_dict, collab_dict, sort_by_channel=True, sort_by_collab=True):
+def sort_by_ids(mat, channel_dict, collab_dict, is_u=False, is_v=False):
     collab_order = [key for (key, value) in sorted(collab_dict.items(), key=lambda x: x[1])]
     channel_order = [key for (key, value) in sorted(channel_dict.items(),  key=lambda x: x[1])]
 
-    if sort_by_channel:
+    if not is_u:
         idx = np.empty_like(channel_order)
         idx[channel_order] = np.arange(len(channel_order))
         mat[:] = mat[:, idx]
 
-    if sort_by_collab:
+    if not is_v:
         mat = mat.T
 
         idx = np.empty_like(collab_order)
@@ -74,30 +77,27 @@ def main():
     output_dir = args.output_dir
 
     # load data
-    M, T, U, D, V, M_hat, channel_dict, collab_dict = load_data(input_dir)
+    data, channel_dict, collab_dict = load_data(input_dir)
 
     # flip dicts, both now {index: id}
     channel_dict = dict(map(reversed, channel_dict.items()))
     collab_dict = dict(map(reversed, collab_dict.items()))
 
     print("Sorting by id")
-    M = sort_by_ids(M, channel_dict, collab_dict)
-    T = sort_by_ids(T, channel_dict, collab_dict)
-    U = sort_by_ids(U, channel_dict, collab_dict, sort_by_channel=False)
-    V = sort_by_ids(V, channel_dict, collab_dict, sort_by_collab=False)
-    M_hat = sort_by_ids(M_hat, channel_dict, collab_dict)
+    M = sort_by_ids(data['M'], channel_dict, collab_dict)
+    M_U = sort_by_ids(data['M_U'], channel_dict, collab_dict, is_u=True)
+    M_V = sort_by_ids(data['M_V'], channel_dict, collab_dict, is_v=True)
+    M_hat = sort_by_ids(data['M_hat'], channel_dict, collab_dict)
 
     # verify out directory exists
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     plot_matrix(M, output_dir, 'M')
-    plot_matrix(T, output_dir, 'T')
-    plot_matrix(U, output_dir, 'U')
-    plot_matrix(D, output_dir, 'D')
-    plot_matrix(V, output_dir, 'V')
+    plot_matrix(M_U, output_dir, 'M_U')
+    plot_matrix(M_V, output_dir, 'M_V')
     plot_matrix(M_hat, output_dir, 'M_hat')
-    plot_matrix(np.absolute(np.subtract(T, M_hat)), output_dir, 'Error')
+    # plot_matrix(np.absolute(np.subtract(T, M_hat)), output_dir, 'Error')
 
 
 if __name__ == '__main__':
