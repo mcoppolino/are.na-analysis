@@ -20,9 +20,9 @@ def r_score(M, M_hat, a=0.5):
         # indices that would sort M_hat[u] from high to low
         sorted_rec_indices = np.flip(np.argsort(M_hat[u]))
 
-        for i in sorted_rec_indices:
+        for idx, i in enumerate(sorted_rec_indices):
             f_u = M[u][i]
-            denom = 2 ** (i / (a-1))
+            denom = 2 ** (idx / (a-1))
             r_u += f_u / denom
 
         r.append(r_u)
