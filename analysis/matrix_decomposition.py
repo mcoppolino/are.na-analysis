@@ -28,7 +28,7 @@ def main():
     test_thresh = args.test_thresh  # TODO: find a way to optimize this
 
     # get data with passed in constraints (see parse_args and docstring for get_collaborators)
-    channels, collabs = get_collaborators(collabs_csv_path, n=100, min_collabs=3, max_collabs=6)
+    channels, collabs = get_collaborators(collabs_csv_path, n=None, min_collabs=3, max_collabs=6)
 
     # initialize model
     model = SVDModel(channels, collabs)

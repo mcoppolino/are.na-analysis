@@ -2,7 +2,7 @@ import os
 import pickle
 from argparse import ArgumentParser
 import numpy as np
-import matplotlib.pyplot as plt
+import math
 
 
 def parse_args():
@@ -10,8 +10,6 @@ def parse_args():
 
     parser.add_argument('-input_dir', help='path to directory containing results of matrix decomposition',
                         default='../data/model')
-    parser.add_argument('-output_dir', help='path to output directory to save visuals',
-                        default='./plots')
 
     return parser.parse_args()
 
@@ -35,8 +33,8 @@ def load_data(input_directory):
 
     return data_dict, channel_dict, collab_dict
 
-
-def sort_by_ids(mat, channel_dict, collab_dict, is_u=False, is_v=False):
+#sort M_hat and T by M_hat score
+def sort_by_score(mat, channel_dict, collab_dict, is_u=False, is_v=False):
     collab_order = [key for (key, value) in sorted(collab_dict.items(), key=lambda x: x[1])]
     channel_order = [key for (key, value) in sorted(channel_dict.items(),  key=lambda x: x[1])]
 
@@ -57,21 +55,17 @@ def sort_by_ids(mat, channel_dict, collab_dict, is_u=False, is_v=False):
     return mat
 
 
-def plot_matrix(mat, output_dir, title):
-    print("Plotting %s" % title)
-    # if title == 'M_hat':
-    #     plt.imshow(mat, cmap='hot', vmin=0.1)
-    # else:
-    #     plt.imshow(mat, cmap='hot')
-    # plt.colorbar()
+def get_score(M_hat, T, a):
+    R = 0
+    for u in range(M_hat.size[0]):
+        R_u = 0
+        R_star = sum(1/(math.pow(2, (k/a-1))) for k in range(T[u].count(1))
+        for i in range(M_hat.size[1]):
+            if M_hat[u][i] >= 0.1 and T[u][i] == 1:
+                R_u = R_u + (M_hat[u][i])/math.pow(2, (i)/(a-1))
+        R = R + R_u/R_star
 
-    plt.spy(mat, precision=0.1, marker=1, alpha=0.5)
-    plt.title(title)
-    plt.xlabel('Channel')
-    plt.ylabel('Collaborator')
-    plt.savefig(output_dir + '/%s.png' % title)
-    plt.close()
-
+    return R
 
 def main():
     args = parse_args()
@@ -85,24 +79,9 @@ def main():
     channel_dict = dict(map(reversed, channel_dict.items()))
     collab_dict = dict(map(reversed, collab_dict.items()))
 
-    print("Sorting by id")
-    M = sort_by_ids(data['M'], channel_dict, collab_dict)
-    M_U = sort_by_ids(data['M_U'], channel_dict, collab_dict, is_u=True)
-    M_V = sort_by_ids(data['M_V'], channel_dict, collab_dict, is_v=True)
-    M_hat = sort_by_ids(data['M_hat'], channel_dict, collab_dict)
-    T = sort_by_ids(data['T'], channel_dict, collab_dict)
+    print("Sorting by score")
+    M_hat = sort_by_score(data['M_hat'], channel_dict, collab_dict)
 
-    # verify out directory exists
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    R = get_score(M_hat, T, 1)
+    print(R)
 
-    plot_matrix(M, output_dir, 'M')
-    plot_matrix(M_U, output_dir, 'M_U')
-    plot_matrix(M_V, output_dir, 'M_V')
-    plot_matrix(M_hat, output_dir, 'M_hat')
-    plot_matrix(T, output_dir, 'T')
-    # plot_matrix(np.absolute(np.subtract(T, M_hat)), output_dir, 'Error')
-
-
-if __name__ == '__main__':
-    main()

@@ -43,28 +43,20 @@ Once we have the channels-collaborators matrix which we use for testing, we can 
  <p>
 Our model correctly predicted the collaboration behavior of 95% of users in our test split, and generated roughly 13,300 new recommendations overall. In other words, 95% of the 1s we removed from the training matrix were predicted with a value greater than 0.1 (our threshold value) in M’, and 0.0001% of M’ (13,300 pairings) included values above the threshold that were 0s (nonexistent collaborator-channel pairs) in the original dataset.
  </p>
-<h4>Data</h4>
- <body>
- <img src="../visualization/data.png" alt="Data" width="500" height="300">
- </body>
- <p>
-Our data does not have any sensitive/protected attributes that could affect our machine learning model.
-<br><br>
- </p>
+
 <h4>Visualization</h4>
  <body>
- <img src="../visualization/heatmap.png" alt="Heatmap" width="500" height="300">
+<img src="../data/plots_test/M.png" alt="Heatmap" width="500" height="300">
+<br><br>
+<img src="../data/plots_test/T.png" alt="Heatmap" width="500" height="300">
+<br><br>
+<img src="../data/plots_test/M_hat.png" alt="Heatmap" width="500" height="300">
+ <br><br>
+<img src="../data/plots_test/Error.png" alt="Heatmap" width="500" height="300">
+ <br><br>
+ In visualizing our data, we wanted to convey three things: the sparsity of our original dataset (before running SVD) and of our testing prediction matrix. We used matplotlib.pyplot.imshow to generate heatmaps of collaborator-channel pairing scores in the original dataset and the test set (both having only binary values, so effectively scatterplots) and the generated recommendation matrix (with predicted scores in between 0 and 1, shown by color range). Add interpretation here. For visualizing the error between known pairings and predicted pairings, we generated an error heatmap to show the relative range of differences across the matrix. Add interpretation here.
+
  </body>
- <p>
-....
-<br><br>
- </p>
-<h4>Interpretation</h4>
- <p>
-We are satisfied with our prediction accuracy of ....
-We got that accuracy/success metric because ...
-We are confident in the results because ...
-<br><br>
  </p>
 <h4>Future Directions</h4>
  <p>
@@ -74,3 +66,4 @@ Moving forward, we will want to play around with train/test splits, L values for
 </div>
 </body>
 </html>
+
