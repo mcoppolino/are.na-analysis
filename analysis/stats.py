@@ -2,7 +2,7 @@ import numpy as np
 from get_model_data import get_model_data
 
 # R_u = sum over channels i (M[u][i] / 2 ** (i - 1 / a - 1)) where M[u] is sorted by M_hat[u] decreasing
-def r_score(M, M_hat, a=0.5):
+def r_score(M, M_hat, a=0.5, t=0.1):
     # for u in range(M_hat.shape[0]):
     #     R_u = 0
     #     R_star = sum(1/(math.pow(2, (k/a-1))) for k in range(T[u].count(1)))
@@ -21,13 +21,16 @@ def r_score(M, M_hat, a=0.5):
         sorted_rec_indices = np.flip(np.argsort(M_hat[u]))
 
         for idx, i in enumerate(sorted_rec_indices):
+            if M_hat[u][i] < t:
+                break
             f_u = M[u][i]
             denom = 2 ** (idx / (a-1))
             r_u += f_u / denom
 
-        r.append(r_u)
+        r_star = sum(1 / (2 ** (i / a - 1)) for k in range(np.sum(M[u])))
+        r.append(r_u / r_star)
 
-    r_star = 0 # TODO calculate R_star
+
 
     # r_score = sum(r_u / r_star for r_u in r)
     return 0
