@@ -130,30 +130,31 @@ class SVDModel:
 
     def train(self):
         """
-        Trains the model by constructing self.M_hat, a reconstruction of M using truncated SVD. The resulting M_hat
-        contains probabilities that user i should collaborate on channel j at M_hat[i][j]. M_hat is our model's
-        recommendations, given all data. Stores the truncated SVD components and M_hat.
+        Trains the model by constructing self.M_hat and self.T_hat, reconstructions of M and T using truncated SVD.
+        The resulting M_hat contains probabilities that user i should collaborate on channel j at M_hat[i][j]. M_hat
+        is our model's recommendations, given all data. Constructs T by cloning M into T, and removes some
+        adjacencies. T_hat is constructed using truncated SVD on T. T_hat should contain high probabilities at the
+        removed values, where we know there already exists an adjacency.
         """
         print("Training model...")
+
+        # train M, store components and M_hat
         self.M_U, self.M_D, self.M_V = self.regular_svd(self.M)
         self.M_U_trunc, self.M_D_trunc, self.M_V_trunc = self.truncate(self.M_U, self.M_D, self.M_V)
         self.M_hat = np.matmul(self.M_U_trunc, self.M_V_trunc)
+
+        # train T, store components and T_hat
+        self.T_U, self.T_D, self.T_V = self.regular_svd(self.T)
+        self.T_U_trunc, self.T_D_trunc, self.T_V_trunc = self.truncate(self.T_U, self.T_D, self.T_V)
+        self.T_hat = np.matmul(self.T_U_trunc, self.T_V_trunc)
 
         self.plot_singular_values(self.M_D)
 
     def test(self, thresh):
         """
         :param thresh: Test threshold to classify probabilities as positive
-
-        Tests the model by cloning M into T, and removing some adjacencies. T_hat is constructed using truncated
-        SVD on T. T_hat should contain high probabilities at the removed values, where we know there already exists
-        an adjacency.
         """
         print("Testing model...")
-
-        self.T_U, self.T_D, self.T_V = self.regular_svd(self.T)
-        self.T_U_trunc, self.T_D_trunc, self.T_V_trunc = self.truncate(self.T_U, self.T_D, self.T_V)
-        self.T_hat = np.matmul(self.T_U_trunc, self.T_V_trunc)
 
         # find target test indices in T_hat (values removed from T)
         test_idxs = np.where(self.M != self.T)
@@ -175,7 +176,7 @@ class SVDModel:
         # There should be a large difference between these values, indicating that predictions are not just noise
         return test_values_above_thresh, non_test_values_above_thresh
 
-    def plot_singular_values(self, D):
+    def plot_singular_values(self, D, title='svs.png'):
         """
         Plots singular values of SVD to determine the optimal truncated dimension via inspection
         """
@@ -185,7 +186,12 @@ class SVDModel:
         plt.xlabel('Nth Largest Singular Value')
         plt.ylabel('Value')
         # plt.show()
-        plt.savefig('../visualization/svs.png')  # TODO change path to dir containing visualizations
+
+        plots_dir = '../visualization/plots/'
+        if not os.path.exists(plots_dir):
+            os.makedirs(plots_dir)
+
+        plt.savefig(plots_dir + title)  # TODO change path to dir containing visualizations
 
     def save(self, output_directory):
         """
