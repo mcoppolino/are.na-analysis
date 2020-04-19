@@ -36,12 +36,6 @@ def main():
     # train model (and plot singular values to find elbow point to determine optimal trunc)
     model.train()
 
-    # test model
-    test_above_thresh, non_test_above_thresh = model.test(test_thresh)
-
-    # print test metrics
-    print(test_above_thresh, non_test_above_thresh)
-
     # save model
     model.save(outdir)
 

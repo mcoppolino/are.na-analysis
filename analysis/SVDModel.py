@@ -146,41 +146,11 @@ class SVDModel:
         self.M_U_trunc, self.M_D_trunc, self.M_V_trunc = self.truncate(self.M_U, self.M_D, self.M_V)
         self.M_hat = np.matmul(self.M_U_trunc, self.M_V_trunc)
 
-        self.plot_singular_values(self.M_D)
-
-    def test(self, thresh):
-        """
-        :param thresh: Test threshold to classify probabilities as positive
-
-        Tests the model by cloning M into T, and removing some adjacencies. T_hat is constructed using truncated
-        SVD on T. T_hat should contain high probabilities at the removed values, where we know there already exists
-        an adjacency.
-        """
-        print("Testing model...")
-
         self.T_U, self.T_D, self.T_V = self.regular_svd(self.T)
         self.T_U_trunc, self.T_D_trunc, self.T_V_trunc = self.truncate(self.T_U, self.T_D, self.T_V)
         self.T_hat = np.matmul(self.T_U_trunc, self.T_V_trunc)
 
-        # find target test indices in T_hat (values removed from T)
-        test_idxs = np.where(self.M != self.T)
-        predictions = self.T_hat[test_idxs]
-
-        num_predicted = len(test_idxs[0])
-        num_correct = np.count_nonzero(predictions >= thresh)
-        test_values_above_thresh = num_correct / num_predicted
-
-        # find target non-test indices in T_hat (non test indices, zero in T, above min threshold in M_hat)
-        pred_significant_thresh = 10 ** -6
-        non_test_idxs = np.where((self.T == self.M) & (self.T == 0) & (self.T_hat > pred_significant_thresh))
-        predictions = self.T_hat[non_test_idxs]
-
-        num_predicted = len(non_test_idxs[0])
-        num_correct = np.count_nonzero(predictions >= thresh)
-        non_test_values_above_thresh = num_correct / num_predicted
-
-        # There should be a large difference between these values, indicating that predictions are not just noise
-        return test_values_above_thresh, non_test_values_above_thresh
+        self.plot_singular_values(self.M_D)
 
     def plot_singular_values(self, D):
         """
