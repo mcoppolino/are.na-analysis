@@ -150,20 +150,6 @@ class SVDModel:
         self.T_U_trunc, self.T_D_trunc, self.T_V_trunc = self.truncate(self.T_U, self.T_D, self.T_V)
         self.T_hat = np.matmul(self.T_U_trunc, self.T_V_trunc)
 
-        self.plot_singular_values(self.M_D)
-
-    def plot_singular_values(self, D):
-        """
-        Plots singular values of SVD to determine the optimal truncated dimension via inspection
-        """
-        singular_values = np.diag(D)
-        plt.plot(singular_values)
-        plt.title('Singular values of M')
-        plt.xlabel('Nth Largest Singular Value')
-        plt.ylabel('Value')
-        # plt.show()
-        plt.savefig('../visualization/svs.png')  # TODO change path to dir containing visualizations
-
     def save(self, output_directory):
         """
         :param output_directory: the directory to save the components of the model
