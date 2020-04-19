@@ -1,5 +1,5 @@
 import math
-from SVDModel import SVDModel
+from get_model_data import get_model_data
 
 
 def get_score(M_hat, T, a):
@@ -18,9 +18,12 @@ def get_score(M_hat, T, a):
 
 
 def main():
-    model = SVDModel(load_dir='../data/model')
-    r = get_score(model.M_hat, model.T, 1)
-    print(r)
+    data = get_model_data()
+    M_hat = data['M_hat']
+    T = data['T']
+
+    r = get_score(M_hat, T, 1)
+
 
 if __name__ == '__main__':
     main()

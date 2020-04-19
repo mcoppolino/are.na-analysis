@@ -69,22 +69,3 @@ def get_model_data(input_dir='../data/model'):
                   }
 
     return model_data
-
-
-# def plot_matrix(mat, output_dir, title):
-#     print("Plotting %s" % title)
-#
-#     # verify out directory exists
-#     if not os.path.exists(output_dir):
-#         os.makedirs(output_dir)
-#
-#     if title == 'M_hat':
-#         plt.imshow(mat, cmap='hot', vmin=0.1)
-#     else:
-#         plt.imshow(mat, cmap='hot')
-#     plt.colorbar()
-#     plt.title(title)
-#     plt.xlabel('Channel')
-#     plt.ylabel('Collaborator')
-#     plt.savefig(output_dir + '/%s.png' % title)
-#     plt.close()
