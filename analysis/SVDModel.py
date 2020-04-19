@@ -6,7 +6,17 @@ from scipy.linalg import svd
 
 
 class SVDModel:
-    def __init__(self, channels, collabs, load_dir=None):
+    def __init__(self, channels=None, collabs=None, load_dir=None):
+        if (channels is None and collabs is None) and load_dir is None:
+            print('SVD Model received all null arguments. Either (channels, collabs) or (load_dir) must not be none. '
+                  'Exiting.')
+            exit(0)
+
+        # if load_dir is specified, load model from saved state and exit init
+        if load_dir:
+            self.load_model(load_dir)
+            return
+
         print("Initializing model...")
         self.channels = channels  # guaranteed sorted
         self.collaborators = collabs
@@ -39,10 +49,7 @@ class SVDModel:
 
         self.svs_plot = None
 
-        if load_dir:
-            self.load_model(load_dir)
-        else:
-            self.construct_matrices_and_dicts()
+        self.construct_matrices_and_dicts()
 
     def construct_matrices_and_dicts(self, dropout=0.1):
         """
@@ -235,7 +242,7 @@ class SVDModel:
 
         Loads all components of the model to be used for further calculations
         """
-        print('Loading data from %s' % input_directory)
+        print('Loading model from %s' % input_directory)
 
         npz_file = input_directory + '/svd.npz'
         dicts_file = input_directory + '/dicts.p'
