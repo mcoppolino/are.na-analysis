@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 import os
-
-from matplotlib.patches import Patch
 
 from analysis.get_model_data import get_model_data
 
@@ -48,6 +47,7 @@ def long_tail_plot(M, output_dir):
     :param output_dir: directory to save plot
     plots a line plot of user vs num collaborators, sorted by num collaborators decreasing
     """
+    print('Plotting long tail')
 
     y = sorted(np.sum(M, axis=1), reverse=True)
     plt.plot(y, color='blue')
@@ -77,6 +77,8 @@ def plot_singular_values(D, orig_matrix, output_dir):
     """
     Plots singular values of SVD to determine the optimal truncated dimension via inspection
     """
+    print('Plotting singular values of %s' % orig_matrix)
+
     singular_values = np.diag(D)
     plt.plot(singular_values)
     plt.title('Singular values of %s' % orig_matrix)
