@@ -3,37 +3,28 @@ from matplotlib.patches import Patch
 import numpy as np
 import os
 
-from analysis.get_model_data import get_model_data
+from get_model_data import get_model_data
 
 
-def spencer_plot_matrix(mat, output_dir, title):
-    print("Plotting %s" % title)
+def plot_matrix(mat, output_dir, title):
+    # print("Plotting %s" % title)
+    #
+    # # verify out directory exists
+    # if not os.path.exists(output_dir):
+    #     os.makedirs(output_dir)
+    #
     # if title == 'M_hat':
     #     plt.imshow(mat, cmap='hot', vmin=0.1)
     # else:
     #     plt.imshow(mat, cmap='hot')
     # plt.colorbar()
+    # plt.title(title)
+    # plt.xlabel('Channel')
+    # plt.ylabel('Collaborator')
+    # plt.savefig(output_dir + '/%s.png' % title)
+    # plt.close()
 
     plt.spy(mat, precision=0.1, marker=1, alpha=0.5)
-    plt.title(title)
-    plt.xlabel('Channel')
-    plt.ylabel('Collaborator')
-    plt.savefig(output_dir + '/%s.png' % title)
-    plt.close()
-
-
-def plot_matrix(mat, output_dir, title):
-    print("Plotting %s" % title)
-
-    # verify out directory exists
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    if title == 'M_hat':
-        plt.imshow(mat, cmap='hot', vmin=0.1)
-    else:
-        plt.imshow(mat, cmap='hot')
-    plt.colorbar()
     plt.title(title)
     plt.xlabel('Channel')
     plt.ylabel('Collaborator')
@@ -97,13 +88,15 @@ def main():
 
     model_data = get_model_data()
     M = model_data['M']
-    T = model_data['T']
-    M_D = model_data['M_D']
-    T_D = model_data['T_D']
+    # T = model_data['T']
+    # M_D = model_data['M_D']
+    # T_D = model_data['T_D']
+    #
+    # long_tail_plot(M, output_dir)
+    # plot_singular_values(M_D, 'M', output_dir)
+    # plot_singular_values(T_D, 'T', output_dir)
+    plot_matrix(M, output_dir, 'M (sorted)')
 
-    long_tail_plot(M, output_dir)
-    plot_singular_values(M_D, 'M', output_dir)
-    plot_singular_values(T_D, 'T', output_dir)
 
 
 if __name__ == '__main__':

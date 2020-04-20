@@ -3,7 +3,7 @@ from ast import literal_eval
 import math
 
 
-def get_collaborators(collab_fp, n=None, min_collabs=1, max_collabs=math.inf):
+def get_collaborators(collab_fp, n=None, min_collabs=2, max_collabs=math.inf):
     """
     :param collab_fp: filepath to collaborators + owners csv
     :param n: length of data to return, from top of all data sorted by length of collaborators

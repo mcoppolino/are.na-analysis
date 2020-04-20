@@ -56,16 +56,17 @@ def get_model_data(input_dir='../data/model'):
     collab_dict = dict(map(reversed, collab_dict.items()))
 
     # extract from NpzFile, sort data, and store in model_data
-    model_data = {'M': sort_by_ids(npz_data['M'], channel_dict, collab_dict),
-                  'T': sort_by_ids(npz_data['T'], channel_dict, collab_dict),
-                  'M_U': sort_by_ids(npz_data['M_U'], channel_dict, collab_dict, is_u=True),
-                  'T_U': sort_by_ids(npz_data['T_U'], channel_dict, collab_dict, is_u=True),
-                  'M_D': npz_data['M_D'],
-                  'T_D': npz_data['T_D'],
-                  'M_V': sort_by_ids(npz_data['M_V'], channel_dict, collab_dict, is_v=True),
-                  'T_V': sort_by_ids(npz_data['T_V'], channel_dict, collab_dict, is_v=True),
-                  'M_hat': sort_by_ids(npz_data['M_hat'], channel_dict, collab_dict),
-                  'T_hat': sort_by_ids(npz_data['T_hat'], channel_dict, collab_dict),
-                  }
+    model_data = {
+        'M': sort_by_ids(npz_data['M'], channel_dict, collab_dict),
+        'T': sort_by_ids(npz_data['T'], channel_dict, collab_dict),
+        # 'M_U': sort_by_ids(npz_data['M_U'], channel_dict, collab_dict, is_u=True),
+        # 'T_U': sort_by_ids(npz_data['T_U'], channel_dict, collab_dict, is_u=True),
+        # 'M_D': npz_data['M_D'],
+        # 'T_D': npz_data['T_D'],
+        # 'M_V': sort_by_ids(npz_data['M_V'], channel_dict, collab_dict, is_v=True),
+        # 'T_V': sort_by_ids(npz_data['T_V'], channel_dict, collab_dict, is_v=True),
+        'M_hat': sort_by_ids(npz_data['M_hat'], channel_dict, collab_dict),
+        'T_hat': sort_by_ids(npz_data['T_hat'], channel_dict, collab_dict),
+    }
 
     return model_data
