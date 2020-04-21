@@ -10,9 +10,6 @@ def parse_args():
                         default='../data/csv/collaborators_with_owners.csv')
     parser.add_argument('-outdir', help='path to output directory', default='../data/model')
 
-    parser.add_argument('-test_thresh', help='test threshold for determining predictions from M_hat',
-                        default=0.1, type=float)
-
     return parser.parse_args()
 
 
@@ -21,12 +18,10 @@ def main():
     args = parse_args()
     collabs_csv_path = args.collabs_csv
     outdir = args.outdir
-    test_thresh = args.test_thresh  # TODO: find a way to optimize this
 
     # get data with passed in constraints (see parse_args and docstring for get_collaborators)
-    # channels, collabs = get_collaborators(collabs_csv_path, n=None, min_collabs=3, max_collabs=6)
+    # channels, collabs = get_collaborators(collabs_csv_path, n=100, min_collabs=3, max_collabs=6)
     channels, collabs = get_collaborators(collabs_csv_path)
-
 
     # initialize model
     model = SVDModel(channels, collabs)
