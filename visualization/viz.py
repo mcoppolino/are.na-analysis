@@ -6,6 +6,7 @@ import os
 from get_model_data import get_model_data
 from stats import normalize_predictions, RMSE, accuracy
 
+
 def plot_matrix(mat, output_dir, title):
     print("Plotting %s" % title)
 
