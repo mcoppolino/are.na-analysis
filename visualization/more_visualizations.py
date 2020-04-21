@@ -46,4 +46,7 @@ for i in nums_of_collabs:
     rscores.append(rscore)
 
 plt.scatter(nums_of_collabs, rscores)
+plt.title("R-scores for Recommendation Matrix Filtered by the Number of Collaborators for Channels")
+plt.xlabel("R-score")
+plt.ylabel("Number of Collaborators for a Set of Channels")
 plt.show()
