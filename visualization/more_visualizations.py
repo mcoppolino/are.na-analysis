@@ -17,15 +17,23 @@ def filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=[]):
     filtered_M_hat_list = []
     for chan_index in range(0, len(M[0])):
         if np.sum(M[:,chan_index]) in nums_of_collaborators:
-            filtered_M_list.append(M[:, chan_index])
+            filtered_M_list.append(M[:,chan_index])
             filtered_M_hat_list.append(M_hat[:,chan_index])
-    filtered_M = np.transpose(np.asarray(filtered_M_list))
-    filtered_M_hat = np.transpose(np.asarray(filtered_M_hat_list))
+    filtered_M_list = list(np.transpose(np.asarray(filtered_M_list)))
+    filtered_M_hat_list = list(np.transpose(np.asarray(filtered_M_hat_list)))
+    row_indices_to_delete = []
+    for row_index in range(0, len(filtered_M_list)):
+        if np.all(filtered_M_list[row_index]==0):
+            row_indices_to_delete.append(row_index)
+    filtered_M_list = np.delete(filtered_M_list, row_indices_to_delete, 0)
+    filtered_M_hat_list = np.delete(filtered_M_hat_list, row_indices_to_delete, 0)
+    filtered_M = np.asarray(filtered_M_list)
+    filtered_M_hat = np.asarray(filtered_M_hat_list)
     return filtered_M, filtered_M_hat
 
 filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
 
-rscore = RSCORE(M, M_hat)
+rscore = RSCORE(filtered_M, filtered_M_hat)
 print(rscore)
 
 
@@ -38,3 +46,4 @@ for i in nums_of_collabs:
     rscores.append(rscore)
 
 plt.scatter(nums_of_collabs, rscores)
+plt.show()
