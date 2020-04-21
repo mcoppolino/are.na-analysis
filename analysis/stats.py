@@ -3,7 +3,7 @@ from get_model_data import get_model_data
 
 
 # https://stats.stackexchange.com/questions/28287/evaluating-recommender-systems-with-implicit-binary-ratings-only?fbclid=IwAR0143c6c2pzlLxQD36P2WEYzIR5C2wfWvhKhGd3LmoQagauLdmSw1yzIq0
-def RSCORE(M, M_hat, a=0.5, t=0.5):
+def RSCORE(M, M_hat, a=2, t=0.5):
     """
     :param M, M_hat: results of model :param a: 'patience of user'
     :param t: the minimum threshold of predictions matrix to recommend a channel to a user
@@ -95,7 +95,7 @@ def normalize_predictions(predictions):
 
 def main():
     # extract data using analysis.get_model_data
-    data = get_model_data()
+    data = get_model_data('../data/model_full')
     M = data['M']
     T = data['T']
     M_hat = data['M_hat']
