@@ -51,13 +51,19 @@ def accuracy(M, T, T_hat, t=0.5):
     :param t: the minimum threshold of predictions matrix to recommend a channel to a user
     :return: rec_acc, the proportion of correct recommendations in the test set
     """
-    print('Calculate testing accuracy...')
+    print('Calculate testing accuracy (t=%f)...' % t)
 
     test_set = np.where(M != T)
     y_pred = np.where(T_hat[test_set] > t, 1, 0)
     y_true = M[test_set]
+    test_set_acc = accuracy_score(y_true, y_pred)
 
-    return accuracy_score(y_true, y_pred)
+    zero_set = np.where(M != 0)
+    y_pred = np.where(T_hat[zero_set] > t, 1, 0)
+    y_true = M[zero_set]
+    zero_set_acc = accuracy_score(y_true, y_pred)
+
+    return test_set_acc, zero_set_acc
 
 
 def normalize_predictions(predictions):
@@ -71,7 +77,7 @@ def normalize_predictions(predictions):
 
 def main():
     # extract data using analysis.get_model_data
-    data = get_model_data('../data/model_full')
+    data = get_model_data()
     M = data['M']
     T = data['T']
     M_hat = data['M_hat']
@@ -86,9 +92,9 @@ def main():
     r = RSCORE(M, M_hat)
 
     metrics = '''
-        Recommendation Accuracy: %d
-        Root Mean Squared Error: %d
-        R-score: %d
+        Recommendation Accuracy: %f
+        Root Mean Squared Error: %f
+        R-score: %f
     ''' % (rec_acc, rmse, r)
 
     print(metrics)

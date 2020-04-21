@@ -4,25 +4,14 @@ import numpy as np
 import os
 
 from get_model_data import get_model_data
-
+from stats import normalize_predictions, RMSE, accuracy
 
 def plot_matrix(mat, output_dir, title):
-    # print("Plotting %s" % title)
-    #
-    # # verify out directory exists
-    # if not os.path.exists(output_dir):
-    #     os.makedirs(output_dir)
-    #
-    # if title == 'M_hat':
-    #     plt.imshow(mat, cmap='hot', vmin=0.1)
-    # else:
-    #     plt.imshow(mat, cmap='hot')
-    # plt.colorbar()
-    # plt.title(title)
-    # plt.xlabel('Channel')
-    # plt.ylabel('Collaborator')
-    # plt.savefig(output_dir + '/%s.png' % title)
-    # plt.close()
+    print("Plotting %s" % title)
+
+    # verify out directory exists
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     plt.spy(mat, precision=0.1, marker=1, alpha=0.5)
     plt.title(title)
@@ -79,6 +68,27 @@ def plot_singular_values(D, orig_matrix, output_dir):
     plt.close()
 
 
+def plot_accuracy_t_sweep(M, T, T_hat, output_dir):
+    print('Plotting t sweep over accuracy...')
+    T_hat_norm = normalize_predictions(T_hat)
+    t_values = np.linspace(0, 1, 11)
+    test_set_accs, zero_set_accs = [], []
+    for t in t_values:
+        test_set_acc, zero_set_acc = accuracy(M, T, T_hat_norm, t)
+        test_set_accs.append(test_set_acc)
+        zero_set_accs.append(zero_set_acc)
+
+    plt.plot(t_values, test_set_accs, label='Test Set Accuracy')
+    plt.plot(t_values, zero_set_accs, label='Zero Set Accuracy')
+    plt.yticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+
+    plt.title('t Sweep of Model Accuracy')
+    plt.xlabel('Value of t')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(output_dir + '/accuracy.png')
+
+
 def main():
     output_dir = './plots'
 
@@ -88,15 +98,16 @@ def main():
 
     model_data = get_model_data()
     M = model_data['M']
-    # T = model_data['T']
+    T = model_data['T']
+    T_hat = model_data['T_hat']
     # M_D = model_data['M_D']
     # T_D = model_data['T_D']
     #
     # long_tail_plot(M, output_dir)
     # plot_singular_values(M_D, 'M', output_dir)
     # plot_singular_values(T_D, 'T', output_dir)
-    plot_matrix(M, output_dir, 'M (sorted)')
-
+    # plot_matrix(M, output_dir, 'M (sorted)')
+    plot_accuracy_t_sweep(M, T, T_hat, output_dir)
 
 
 if __name__ == '__main__':
