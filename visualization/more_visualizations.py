@@ -31,22 +31,47 @@ def filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=[]):
     filtered_M_hat = np.asarray(filtered_M_hat_list)
     return filtered_M, filtered_M_hat
 
-filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
+# filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
 
-rscore = RSCORE(filtered_M, filtered_M_hat)
-print(rscore)
+original_rscore = RSCORE(M, M_hat)
+print("RSCORE of the original matrices M and M_hat is:")
+print(original_rscore)
 
 
 # What is below will plot r-score values for M and M_hat matrices being filtered by number of collaborators:
 nums_of_collabs = list(range(2,20))
+size_of_filtered_matrices = []
 rscores = []
 for i in nums_of_collabs:
     filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, [i])
     rscore = RSCORE(filtered_M, filtered_M_hat)
+    size = np.size(filtered_M)
     rscores.append(rscore)
+    size_of_filtered_matrices.append(size)
+
+rscores_normalized_by_size = np.asarray(rscores) / np.asarray(size_of_filtered_matrices)
 
 plt.scatter(nums_of_collabs, rscores)
 plt.title("R-scores for Recommendation Matrix Filtered by the Number of Collaborators for Channels")
-plt.xlabel("R-score")
-plt.ylabel("Number of Collaborators for a Set of Channels")
+plt.ylabel("R-score")
+plt.xlabel("Number of Collaborators for a Set of Channels")
+plt.xticks(ticks=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
+           labels=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]))
 plt.show()
+
+plt.scatter(nums_of_collabs, size_of_filtered_matrices)
+plt.title("Sizes of Filtered Recommendation Matrices Filtered by the Number of Collaborators for Channels")
+plt.ylabel("Size of Filtered Matrix (1e7)")
+plt.xlabel("Number of Collaborators for Set of Channels")
+plt.xticks(ticks=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
+           labels=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]))
+plt.show()
+
+plt.scatter(nums_of_collabs, rscores_normalized_by_size)
+plt.title("R-scores for Recommendation Matrix Filtered by the Number of Collaborators for Channels Normalized by Filtered Matrix Size")
+plt.ylabel("Normalized R-score (1e-5)")
+plt.xlabel("Number of Collaborators for a Set of Channels")
+plt.xticks(ticks=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]),
+           labels=np.array([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]))
+plt.show()
+
