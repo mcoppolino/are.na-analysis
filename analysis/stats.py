@@ -95,7 +95,7 @@ def normalize_predictions(predictions):
 
 def main():
     # extract data using analysis.get_model_data
-    data = get_model_data('../data/model_full')
+    data = get_model_data()
     M = data['M']
     T = data['T']
     M_hat = data['M_hat']
