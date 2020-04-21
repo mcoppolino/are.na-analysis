@@ -31,10 +31,11 @@ def filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=[]):
     filtered_M_hat = np.asarray(filtered_M_hat_list)
     return filtered_M, filtered_M_hat
 
-filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
+# filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
 
-rscore = RSCORE(filtered_M, filtered_M_hat)
-print(rscore)
+original_rscore = RSCORE(M, M_hat)
+print("RSCORE of the original matrices M and M_hat is:")
+print(original_rscore)
 
 
 # What is below will plot r-score values for M and M_hat matrices being filtered by number of collaborators:
@@ -47,6 +48,6 @@ for i in nums_of_collabs:
 
 plt.scatter(nums_of_collabs, rscores)
 plt.title("R-scores for Recommendation Matrix Filtered by the Number of Collaborators for Channels")
-plt.xlabel("R-score")
-plt.ylabel("Number of Collaborators for a Set of Channels")
+plt.ylabel("R-score")
+plt.xlabel("Number of Collaborators for a Set of Channels")
 plt.show()
