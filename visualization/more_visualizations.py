@@ -39,7 +39,7 @@ print(original_rscore)
 
 
 # What is below will plot r-score values for M and M_hat matrices being filtered by number of collaborators:
-nums_of_collabs = list(range(2,20))
+nums_of_collabs = list(range(2,21))
 size_of_filtered_matrices = []
 rscores = []
 for i in nums_of_collabs:
