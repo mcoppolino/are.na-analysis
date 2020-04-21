@@ -5,7 +5,7 @@ sys.path.insert(1, '../analysis/')
 from stats import RSCORE
 
 
-output_dir = './plots'
+output_dir = '../analysis_handin'
 the_matrix_data = np.load('../data/model/svd.npz')
 M_hat = the_matrix_data['M_hat']
 M = the_matrix_data['M']
@@ -47,14 +47,14 @@ plt.spy(T_hat, precision=0.1, marker=1, alpha=0.5, aspect='auto')
 plt.title('New Recommendations')
 plt.xlabel('Channel')
 plt.ylabel('Collaborator')
-plt.savefig(output_dir + 'New_recs.png')
+plt.savefig(output_dir + '/New_recs.png')
 plt.close()
 
 plt.spy(T, precision=0.1, marker=1, alpha=0.5, aspect='auto')
 plt.title('Test Set Sparsity')
 plt.xlabel('Channel')
 plt.ylabel('Collaborator')
-plt.savefig(output_dir + 'T.png')
+plt.savefig(output_dir + '/T_sparsity.png')
 plt.close()
 
 # original_rscore = RSCORE(M, M_hat)
