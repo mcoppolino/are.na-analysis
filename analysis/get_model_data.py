@@ -59,7 +59,7 @@ def get_model_data(input_dir='../data/model'):
     model_data = {
         'M': sort_by_ids(npz_data['M'], channel_dict, collab_dict),
         'T': sort_by_ids(npz_data['T'], channel_dict, collab_dict),
-        # 'M_U': sort_by_ids(npz_data['M_U'], channel_dict, collab_dict, is_u=True),
+        'M_U': sort_by_ids(npz_data['M_U'], channel_dict, collab_dict, is_u=True),
         # 'T_U': sort_by_ids(npz_data['T_U'], channel_dict, collab_dict, is_u=True),
         # 'M_D': npz_data['M_D'],
         # 'T_D': npz_data['T_D'],

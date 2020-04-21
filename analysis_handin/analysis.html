@@ -6,64 +6,81 @@
  <title>Analysis</title>
 </head>
 <body>
-<div>
- <div>
- <div>
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="page-header center">
  <h1>scra.per analysis</h1>
  </div>
- <h4><a href="https://github.com/mcoppolino/are.na-analysis" target="_blank">Github Repo</a><h4>
+ <h3><a href="https://github.com/mcoppolino/are.na-analysis" target="_blank">Github Repo</a><h3>
    </p>
-   <br />
-<h4>Purpose</h4>
+<h3>Purpose</h3>
  <p>
-The purpose of this project is to recommend Are.na channels to users who are likely to contribute to them. Originally, we wanted to recommend channels, which are collections of content (images, files, videos, etc.) and other channels, to any Are.na user. However, due to authorization restrictions and sheer data size, we are now just working with “collaborators”: users who add to, or own, channels (as opposed to exclusively follow channels). This subset of users is of a more manageable size, and is also a richer dataset as one could argue that analyzing the contributions of a user speaks more to the user’s interests than their channel followings. Generally, our success metric is a function of how many collaborator-channel pairs we correctly predicted from our test set using our model.
+The purpose of this project is to recommend Are.na channels to users who are likely to contribute to them. Originally, we wanted to recommend channels, which are collections of  content (images, files, videos, etc.) and other channels, to any Are.na user. However, due to authorization restrictions, we were forced to resort to working with “collaborators”: users who add to or own channels (as opposed to following channels). This subset of users is of a more manageable size, and is also a richer dataset as one could argue that analyzing the contributions of a user speaks more to the user’s interests than their channel followings. We use a multitude of metrics to measure the performance of the model. We found that the most reliable metric is the test accuracy: the proportion of known user-collaborator pairs that the model could correctly identify when they were masked during training.
 <br><br>
  </p>
-<h4>Process</h4>
+<h3>Algorithms</h3>
  <p>
-We used singular value decomposition (SVD) for dimensionality reduction, which is an unsupervised learning algorithm. Noisy features tend to make the model slower to train, easier to overfit, and harder to visualize and interpret. We thus removed these useless features to increase the overall performance of our model. For the recommendation system, matrix completion was used for the missing values on the channels-collaborators matrix.
+We used truncated singular value decomposition (SVD) to generate predictions for ‘missing’ adjacencies in M, and t-Distributed Stochastic Neighbor Embedding (t-SNE) to later analyze the embeddings of channels and users found in the truncated U and V matrices, respectively.
 <br><br>
- We used truncated singular value decomposition (SVD) to predict which users will contribute to certain channels. To accomplish this, we first had to set up a matrix to apply the truncated SVD on. This matrix has dimensions given by the number of channels with more than two collaborators, and the total number of users who collaborate. For each entry of the matrix corresponding to a certain user and a certain channel, there is a “1” if a user contributed to that channel, and a “0” otherwise. We will refer to this matrix from now on as the channels-collaborators matrix.
+ </p>
+<h3>Process</h3>
+ <p>
+We used truncated singular value decomposition (SVD) to predict which users will contribute to certain channels. To accomplish this, we first had to set up a matrix to apply the truncated SVD on. This matrix has dimensions given by the number of channels with more than two collaborators, and the total number of users who collaborate. For each entry of the matrix corresponding to a certain user and a certain channel, there is a “1” if a user contributed to that channel, and a “0” otherwise. We will refer to this matrix from now on as the channels-collaborators matrix.
 <br><br>
-Once we obtained the channels-collaborators matrix, we could run truncated singular value decomposition on it in order to find suggestions for potential channel-collaborator pairings. Basically, truncated singular value decomposition can be useful to reduce the dimensionality of our channels-collaborators matrix. By truncating, we reduce the number of components (linearly independent column/row vectors which represent the matrix), and we can accomplish this truncation by decomposing the channels-collaborators matrix into a U, D, and V matrix via singular value decomposition using the svd function from scipy.linalg. If we multiply the U and V matrices back together, we can obtain a modified version of the original channels-collaborators matrix which is essentially represented by fewer components which can fill in certain parts of the channels-collaborators matrix. The filled in parts can represent data that potentially “should be” present. For example, after running truncated SVD on our channels-collaborators matrix, for entries in the matrix where there are high positive numbers, it can indicate that these would be good places to have a “1” for the channels-collaborators in order to keep the characteristics of the matrix. Thus, these entries can be thought of as potentially good suggestions for channels for the user corresponding to that entry to contribute to.
+Once the channels-collaborators matrix M was formed, truncated singular value decomposition was applied in order to derive recommendations for potential channel-collaborator pairings. After M is decomposed into U, D, and V, U and V are truncated to reduce the dimensionality of the feature space, which yields an approximation of M (M_hat) when these truncated U and V matrices are multiplied back together. The resulting M_hat is no longer binary {0,1} and instead is filled with floats on [0,1] which can be interpreted as probabilities that a 1 should exist in the original M, i.e. that a user should collaborate on a channel. More specifically, M_hat[i][j] can be interpreted as the probability that M[i][j] should be a 1.
 <br><br>
-However, we want to test that this process would work. How we can test is by taking the channels-collaborators matrix and removing some of the “1” entries from it, and then running truncated singular value decomposition on it and seeing if the new channels-collaborators matrix — which is used to recommend channels for specific users to contribute to — gives high values for the entries where the “1” values were removed. In essence, what we are doing is checking that our model recommends channels for specific users to contribute to where we know, in reality, that those specific users actually contribute to those channels.
+The U and V matrices that are returned by the SVD on M were truncated to a size determined by the singular values contained in D. The values of D indicate the influence that each dimension has on M, and by removing the lower weighted dimensions and keeping the dimensions with higher weights, we can ensure that no important information is lost when encoding M_hat. The truncated length was determined by locating the elbow point of a line plot of the values of D (sorted by descending value by default) via inspection.
+<br><br>
+To test the results of the model, we created a test matrix T, which is a copy of M with 10% of adjacencies (M[i][j] = 1) removed. We hypothesize that after the model is trained using T as an input matrix, the resulting T_hat should have a high prediction value on the test set (where M != T), as the test set contains known adjacencies that were masked during training. T_hat is normalized by the largest value for each user (such that each user has at least one prediction score of 1) and the recommendations derived from T_hat are defined as
+
+<p style="text-align:center">	
+rec[i][j] = {1 if T_hat[i][j] > t, 0 else}
+</p>
+where t is a test threshold.
+<br><br>
+ </p>
+<h3>Implementation</h3>
+ <p>
+A csv file mapping channels to a list of collaborators was formed during data collection, from the site’s API. We added channel owners to this list of collaborators, and wrote the result to data/csv//collaborators_with_owners.csv. The model SVDModel.py takes in this csv file as input, and creates dictionaries of channels and users, mapping the order that they were read in (index) to their id. M is initialized as zeros, and 1 is added to M[i][j], where i is a user index, and j is the channel index which they collaborated on. The test set T is formed using the procedure outlined above, and both M and T are decomposed using SVD. U and V for both M and T are truncated and stored, and all components (U, V, D, truncated U, truncated V, predictions) for both M and T are serialized and saved to data/model/svd.npz, and the dictionaries mapping index to id are saved in the same directory under dicts.p.
 
 <br><br>
  </p>
-<h4>Implementation</h4>
+<h3>Results</h3>
  <p>
-In forming our data, we were able to obtain a .csv of channels and corresponding users who contributed to that channel (collaborators). We can then break the collaborators column into a master list of collaborators. From this, a “testing” matrix can be formed as specified earlier — the channels-collaborators matrix corresponding to our data.
+Another metric we used in evaluating the success of our recommendations is the expected utility score, or “R-score”. R-score estimates the utility of a sorted list of recommendations by accounting for a user’s “patience”, or the half-life of a recommended item’s relevance to the user. In other words, the formula postulates that items recommended later in a list are exponentially less likely to be consumed by a user. While this metric doesn’t necessarily speak to the accuracy of our model or provide us with a statistic that is easily interpretable, we found that the lowest R-score above 0 for a single user is 0.15, and the highest is 0.19. By the definition of the metric, this means that our most confident recommendations are 26.7% more “useful” than our least confident recommendations in terms of the probability of recommended channels actually being contributed to.
 <br><br>
-Once we have the channels-collaborators matrix which we use for testing, we can remove 1% of the entries that have “1” values to form what we refer to as a training matrix. Then, we can run truncated-SVD on the training matrix M to generate M’. The resultant matrix has nonzero values where there were 0s (representing uncorrelated pairs), which we can interpret as probabilities for the task of recommendation.
+We also used Root Mean Squared Error (RMSE) to evaluate the accuracy of predictions. It is a measure of the average deviation of the estimates from the actual values in the dataset. Given the predicted contribution value ŷ<sub>uc</sub> for the test set T of user-channel pairs (u,c) and the actual contribution value y<sub>uc</sub>, the RMSE is calculated by: 
+<p style="text-align:center">	
+	<img src="http://latex.codecogs.com/svg.latex?RMSE=\sqrt{\frac{1}{\left | T \right |} \cdot \sum_{(u,c)\in T} (\widehat{y}_{uc} - y_{uc})^2}" border="0"/>
+</p>
 
+<br>
+To evaluate the relevance and usefulness of our recommendations, we produced a Long Tail Plot. It explores popularity patterns in the user-channel collaboration data by displaying the small percentage of channels with a high volume of collaborations as the “head” and the rest as the “tail.” With many observations of popular channels in the training data, the recommender system can easily learn to accurately predict them. The recommendations of these already popular channels are not likely to be relevant or useful to most users.
 <br><br>
  </p>
-<h4>Results</h4>
- <p>
-Our model correctly predicted the collaboration behavior of 95% of users in our test split, and generated roughly 13,300 new recommendations overall. In other words, 95% of the 1s we removed from the training matrix were predicted with a value greater than 0.1 (our threshold value) in M’, and 0.0001% of M’ (13,300 pairings) included values above the threshold that were 0s (nonexistent collaborator-channel pairs) in the original dataset.
- </p>
 
-<h4>Visualization</h4>
+<h3>Visualization</h3>
  <body>
-<img src="../data/plots_test/M.png" alt="Heatmap" width="500" height="300">
-<br><br>
-<img src="../data/plots_test/T.png" alt="Heatmap" width="500" height="300">
-<br><br>
-<img src="../data/plots_test/M_hat.png" alt="Heatmap" width="500" height="300">
+<center><img src="M (sorted).png" alt="M (sorted).png" style="float: left; width: 50%; right; margin-bottom: 0.5em;"></center>
+<center><img src="M (unsorted).png" alt="M (unsorted).png" style="float: left; width: 50%; right; margin-bottom: 0.5em;"></center>
+<center><img src="M_svs.png" alt="M_svs.png" style="float: width: 60%; right; margin-bottom: 0.5em;"></center>
+<center><img src="long_tail_plot.png" alt="long_tail_plot.png" style="float: width: 60%; right; margin-bottom: 0.5em;"></center>
+<img src="T_hat_test_predictions.png" alt="T_hat_test_predictions.png" style="float: left; width: 100%; margin-right: 1%; margin-bottom: 0.5em;">
+<img src="T_hat_test_non_predictions.png" alt="T_hat_test_non_predictions.png" style="float: left; width: 100%; margin-right: 1%; margin-bottom: 0.5em;">
+<img src="predictions_replicated_non_test_M_hat_for_collabs.png" alt="predictions_replicated_non_test_M_hat_for_collabs.png" style="float: left; width: 100%; margin-right: 1%; margin-bottom: 0.5em;">
+<img src="predictions_formed_non_test_M_hat_for_collabs.png" alt="predictions_formed_non_test_M_hat_for_collabs.png" style="float: left; width: 100%; margin-right: 1%; margin-bottom: 0.5em;">
  <br><br>
-<img src="../data/plots_test/Error.png" alt="Heatmap" width="500" height="300">
- <br><br>
- In visualizing our data, we wanted to convey three things: the sparsity of our original dataset (before running SVD) and of our testing prediction matrix. We used matplotlib.pyplot.imshow to generate heatmaps of collaborator-channel pairing scores in the original dataset and the test set (both having only binary values, so effectively scatterplots) and the generated recommendation matrix (with predicted scores in between 0 and 1, shown by color range). Add interpretation here. For visualizing the error between known pairings and predicted pairings, we generated an error heatmap to show the relative range of differences across the matrix. Add interpretation here.
-
+<p style="clear: both;">
  </body>
  </p>
-<h4>Future Directions</h4>
+<h3>Future Directions</h3>
  <p>
 Moving forward, we will want to play around with train/test splits, L values for truncation, and threshold values for determining recommendations from correlation embeddings in trying to optimize our score metric. Generally, we also will want to perform a more thorough statistical analysis of our results. It might also be interesting to cluster channels based on the resultant matrix of SVD to analyze related “genres” of content, which could potentially be leveraged towards generating “metachannels”. This would be an invaluable feature for Are.na to implement as it would increase the connectivity between channels and thus thicken the network of content. Our final poster therefore will likely be a mix of graphs and statistics related to the success of our recommender system itself, along with an exploration of clustered content types and genres, which can be visualized qualitatively through sampling the content of related channels (i.e. AI-generated moodboards).
- </p>
+  <br><br>
+ <br><br>
+	</p>
  </div>
 </div>
 </body>
 </html>
-

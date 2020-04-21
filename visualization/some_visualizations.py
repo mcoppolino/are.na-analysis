@@ -151,7 +151,7 @@ fig = plt.figure()
 ax = plt.gca()
 ax.bar(x_axis, y_axis)
 ax.set_title('Average Values in Recommendation Matrix (M_hat) for Corresponding "0" Entries in Original '\
-             'Channels-Collaborator Matrix (M) for Channels of Certain Number of Collaborators')
+             'Channels-Collaborator Matrix (M) for Channels of Certain Number of Collaborators (1e-5)')
 ax.set_xlabel('Number of Collaborators in Given Channel')
 ax.set_ylabel('Average Values in Recommendation Matrix (M_hat) for Corresponding "0" Entries')
 plt.show()

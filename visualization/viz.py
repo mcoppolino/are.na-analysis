@@ -6,12 +6,9 @@ import os
 from get_model_data import get_model_data
 from stats import normalize_predictions, RMSE, accuracy
 
+
 def plot_matrix(mat, output_dir, title):
     print("Plotting %s" % title)
-
-    # verify out directory exists
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     plt.spy(mat, precision=0.1, marker=1, alpha=0.5)
     plt.title(title)
