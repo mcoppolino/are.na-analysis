@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.insert(1, '../analysis/')
 from stats import RSCORE
+from get_model_data import get_model_data
 
 
 output_dir = '../analysis_handin'
-the_matrix_data = np.load('../data/model/svd.npz')
-M_hat = the_matrix_data['M_hat']
-M = the_matrix_data['M']
-T_hat = the_matrix_data['T_hat']
-T = the_matrix_data['T']
+model_data = get_model_data()
+M = model_data['M']
+T = model_data['T']
+T_hat = model_data['T_hat']
+print(M.shape)
 
 thresh = 0.1
 
@@ -38,6 +39,14 @@ def filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=[]):
 
 # filtered_M, filtered_M_hat = filter_channels_by_num_collaborators(M, M_hat, nums_of_collaborators=list(range(3,6)))
 
+
+plt.spy(T_hat, precision=0.1, marker=1, alpha=0.5, aspect='auto')
+plt.title('T_hat Sparsity')
+plt.xlabel('Channel')
+plt.ylabel('Collaborator')
+plt.savefig(output_dir + '/T_hat_sparsity.png')
+plt.close()
+
 for r in range(T_hat.shape[0]):
     for c in range(T_hat.shape[1]):
         if T[r][c] != 0 or T_hat[r][c] < thresh:
@@ -55,6 +64,13 @@ plt.title('Test Set Sparsity')
 plt.xlabel('Channel')
 plt.ylabel('Collaborator')
 plt.savefig(output_dir + '/T_sparsity.png')
+plt.close()
+
+plt.spy(M, precision=0.1, marker=1, alpha=0.5, aspect='auto')
+plt.title('Dataset Sparsity')
+plt.xlabel('Channel')
+plt.ylabel('Collaborator')
+plt.savefig(output_dir + '/M_sparsity.png')
 plt.close()
 
 # original_rscore = RSCORE(M, M_hat)
