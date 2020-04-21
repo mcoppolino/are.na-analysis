@@ -35,7 +35,7 @@ The U and V matrices that are returned by the SVD on M were truncated to a size 
 To test the results of the model, we created a test matrix T, which is a copy of M with 10% of adjacencies (M[i][j] = 1) removed. We hypothesize that after the model is trained using T as an input matrix, the resulting T_hat should have a high prediction value on the test set (where M != T), as the test set contains known adjacencies that were masked during training. T_hat is normalized by the largest value for each user (such that each user has at least one prediction score of 1) and the recommendations derived from T_hat are defined as
 
 <p style="text-align:center">	
-<img src="http://latex.codecogs.com/svg.latex?rec[i][j] = {1 if T_hat[i][j] > t, 0 else}" border="0"/>
+rec[i][j] = {1 if T_hat[i][j] > t, 0 else}
 </p>
 where t is a test threshold.
 <br><br>
