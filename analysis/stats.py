@@ -13,6 +13,7 @@ def RSCORE(M, M_hat, a=2, t=0.5):
     """
     print('Calculating r-score...')
     r = []
+    ru_list = []
     for u in range(M.shape[0]):
         r_u = 0
 
@@ -24,12 +25,19 @@ def RSCORE(M, M_hat, a=2, t=0.5):
                 break
             f_u = M[u][i]
             denom = 2 ** (idx / (a-1))
+            ru_list.append(f_u / denom)
             r_u += f_u / denom
 
         r_star = sum(1 / (2 ** (i / a - 1)) for i in range(int(np.sum(M[u]))))
         r.append(r_u / r_star)
 
+    r_min = min(ru_list)
+    r_median = np.percentile(np.array(ru_list), 50)
+    r_max = max(ru_list)
     r_score = sum(r)
+    print("r_min", r_min)
+    print("r_med", r_median)
+    print("r_max", r_max)
     return r_score
 
 
