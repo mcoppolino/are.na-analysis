@@ -133,6 +133,16 @@ for i in range(0, len(T)):
 
 
 
+# Supplementary graph:
+M = np.transpose(M)
+num_collab_for_channels = np.zeros(100)
+for i in range(0, len(M)):
+    count_for_row = 0
+    for j in range(0, len(M[i])):
+        if M[i][j] == 1:
+            count_for_row += 1
+    num_collab_for_channels[count_for_row] += 1
+
 
 
 
@@ -167,7 +177,15 @@ ax.set_xlabel('Number of Collaborators in Given Channel')
 ax.set_ylabel('Average Values in Recommendation Matrix (M_hat) for Corresponding "1" Entries')
 plt.show()
 
-
+x_axis = list(range(0,100))
+y_axis = num_collab_for_channels
+fig = plt.figure()
+ax = plt.gca()
+ax.bar(x_axis, y_axis)
+ax.set_title('Distribution of Channels Based on How Many Collaborators It Contains')
+ax.set_xlabel('Number of Collaborators for Channel')
+ax.set_ylabel('Count of Channels')
+plt.show()
 
 num_bins = 100
 plt.hist(M_one_vals_in_T_hat, num_bins)
