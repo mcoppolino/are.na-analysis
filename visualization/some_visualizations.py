@@ -177,8 +177,8 @@ ax.set_xlabel('Number of Collaborators in Given Channel')
 ax.set_ylabel('Average Values in Recommendation Matrix (M_hat) for Corresponding "1" Entries')
 plt.show()
 
-x_axis = list(range(0,100))
-y_axis = num_collab_for_channels
+x_axis = list(range(0,100))[0:21]
+y_axis = num_collab_for_channels[0:21]
 fig = plt.figure()
 ax = plt.gca()
 ax.bar(x_axis, y_axis)
